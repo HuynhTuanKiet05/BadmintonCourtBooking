@@ -1,0 +1,18 @@
+namespace BadmintonCourtBooking.Models;
+
+public class Venue
+{
+    public string Id { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string District { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    public string OpenHours { get; set; } = string.Empty;
+    public int PriceFrom { get; set; }
+    public List<Court> Courts { get; set; } = new();
+    public string? Highlight { get; set; }
+    public double Rating { get; set; }
+    public int Reviews { get; set; }
+    public bool ResponseFast { get; set; }
+    public bool HasSlotsToday { get; set; }
+    public string Description { get; set; } = string.Empty;
+}

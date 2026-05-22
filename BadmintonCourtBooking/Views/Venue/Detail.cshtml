@@ -1,0 +1,292 @@
+@model BadmintonCourtBooking.Models.VenueDetailViewModel
+@{
+    ViewData["Title"] = $"{Model.Venue.Name} - CourtBook";
+}
+
+<main class="container animate-fadeIn" style="padding-top: 1.5rem; padding-bottom: 4rem;">
+    <!-- Back to search list -->
+    <a asp-controller="Venue" asp-action="Index" class="btn btn-ghost btn-sm text-secondary" style="margin-bottom: 1.5rem; padding-left: 0;">
+        <i data-lucide="arrow-left" style="width:16px;height:16px"></i> Quay lại danh sách
+    </a>
+
+    <!-- Venue Hero Header -->
+    <div class="venue-hero mb-6">
+        <div class="venue-hero-overlay"></div>
+        <div class="absolute inset-0 pointer-events-none text-white/5">
+            @await Html.PartialAsync("_CourtLines")
+        </div>
+        <div style="position: relative; z-index: 2; height: 100%; display: flex; align-items: flex-end;">
+            <div class="flex-between w-full flex-wrap gap-4">
+                <div>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        @if (Model.Venue.HasSlotsToday)
+                        {
+                            <span class="badge badge-amber" style="background-color: var(--cb-accent); color: var(--cb-accent-text); border-color: var(--cb-accent);">Còn slot hôm nay</span>
+                        }
+                        <span class="badge" style="background-color: rgba(255,255,255,0.15); color: white; border-color: rgba(255,255,255,0.25)">Đã xác minh</span>
+                    </div>
+                    <h1 class="text-white" style="font-size: 1.75rem; margin-bottom: 0.5rem;">@Model.Venue.Name</h1>
+                    <div style="display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.875rem; color: rgba(255,255,255,0.85);">
+                        <span class="flex items-center gap-1"><i data-lucide="map-pin" style="width:14px;height:14px"></i> @Model.Venue.Address, @Model.Venue.District</span>
+                        <span class="flex items-center gap-1"><i data-lucide="clock" style="width:14px;height:14px"></i> @Model.Venue.OpenHours</span>
+                        <span class="flex items-center gap-1"><i data-lucide="star" style="width:14px;height:14px; fill: var(--cb-accent); color: var(--cb-accent)"></i> @Model.Venue.Rating (@Model.Venue.Reviews đánh giá)</span>
+                    </div>
+                </div>
+                <a href="tel:0905123456" class="btn btn-outline" style="border-color: rgba(255,255,255,0.4); background-color: rgba(255,255,255,0.1); color: white;">
+                    <i data-lucide="phone" style="width:16px;height:16px"></i> Gọi chủ sân
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Layout -->
+    <div class="detail-layout">
+        <!-- Main details -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem; min-width: 0;">
+            <!-- Description -->
+            <div class="card" style="padding: 1.5rem; border-color: var(--cb-border); background-color: white;">
+                <h3 style="font-size: 1.125rem; margin-bottom: 0.75rem; font-weight: 600;">Giới thiệu sân</h3>
+                <p class="text-sm text-secondary" style="line-height: 1.6;">
+                    @Model.Venue.Description
+                </p>
+
+                <!-- Courts pricing preview -->
+                <div class="grid-2 gap-3" style="margin-top: 1.25rem;">
+                    @foreach (var court in Model.Venue.Courts)
+                    {
+                        <div style="display: flex; align-items: center; justify-between: space-between; border: 1px solid var(--cb-border-light); border-radius: var(--cb-radius); padding: 0.625rem 0.875rem; background-color: var(--cb-section-alt);">
+                            <div>
+                                <div class="font-medium text-sm">@court.Name</div>
+                                @if (!string.IsNullOrEmpty(court.Note))
+                                {
+                                    <div class="text-xs text-muted" style="margin-top:0.125rem">@court.Note</div>
+                                }
+                            </div>
+                            <span class="font-semibold text-sm" style="color: var(--cb-primary-800)">@BadmintonCourtBooking.Models.MockData.FormatVND(court.PricePerHour)<span class="text-xs text-muted font-normal">/giờ</span></span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Booking Calendar Panel -->
+            <div class="card" style="padding: 1.5rem; border-color: var(--cb-border); background-color: white;">
+                <div class="flex-between" style="margin-bottom: 1.25rem;">
+                    <div>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin: 0;">Lịch đặt sân</h3>
+                        <p class="text-xs text-muted" style="margin-top: 0.25rem;">Bấm vào ô màu xanh để chọn khung giờ bạn muốn đặt</p>
+                    </div>
+                </div>
+
+                <!-- Date Options Chips -->
+                <div class="date-picker" style="margin-bottom: 1.5rem;">
+                    @for (int i = 0; i < Model.DateOptions.Count; i++)
+                    {
+                        var opt = Model.DateOptions[i];
+                        var split = opt.Split(" · ");
+                        var dayLabel = split[0];
+                        var dateNum = split[1];
+                        <button class="date-btn @(i == 0 ? "active" : "")" data-datekey="@opt">
+                            <div class="text-xs opacity-75">@dayLabel</div>
+                            <div class="font-semibold text-sm">@dateNum</div>
+                        </button>
+                    }
+                </div>
+
+                <!-- Slots Grid Table -->
+                <div class="table-wrapper" style="border: 1px solid var(--cb-border); border-radius: var(--cb-radius); overflow: hidden;">
+                    <table class="cb-table" style="width: 100%; border-collapse: separate; border-spacing: 0;">
+                        <thead>
+                            <tr style="background-color: var(--cb-section-alt);">
+                                <th style="width: 90px; text-align: center; border-bottom: 1px solid var(--cb-border)">Khung giờ</th>
+                                @foreach (var court in Model.Venue.Courts)
+                                {
+                                    <th style="text-align: center; border-left: 1px solid var(--cb-border); border-bottom: 1px solid var(--cb-border)">@court.Name</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody id="slots-tbody">
+                            @foreach (var slot in Model.TimeSlots)
+                            {
+                                var h = int.Parse(slot.Split(':')[0]);
+                                var nextSlot = $"{(h + 1):D2}:00";
+                                <tr>
+                                    <td class="font-medium text-xs text-center" style="color: var(--cb-text-secondary); vertical-align: middle; padding: 0.5rem 0.25rem;">
+                                        @slot – @nextSlot
+                                    </td>
+                                    @foreach (var court in Model.Venue.Courts)
+                                    {
+                                        var status = Model.SlotMatrix[court.Name][slot];
+                                        <td style="padding: 0.25rem; border-left: 1px solid var(--cb-border-light); text-align: center;">
+                                            @if (status == BadmintonCourtBooking.Models.SlotStatus.Booked)
+                                            {
+                                                <button class="slot-pill slot-booked w-full" disabled style="display: block; width: 100%;">Đã đặt</button>
+                                            }
+                                            else if (status == BadmintonCourtBooking.Models.SlotStatus.Pending)
+                                            {
+                                                <button class="slot-pill slot-pending w-full" 
+                                                        data-courtid="@court.Id" 
+                                                        data-courtname="@court.Name" 
+                                                        data-price="@court.PricePerHour"
+                                                        data-priceformatted="@BadmintonCourtBooking.Models.MockData.FormatVND(court.PricePerHour)"
+                                                        data-time="@slot" 
+                                                        data-nexttime="@nextSlot"
+                                                        style="display: block; width: 100%;">Chờ duyệt</button>
+                                            }
+                                            else
+                                            {
+                                                <button class="slot-pill slot-available w-full" 
+                                                        data-courtid="@court.Id" 
+                                                        data-courtname="@court.Name" 
+                                                        data-price="@court.PricePerHour"
+                                                        data-priceformatted="@BadmintonCourtBooking.Models.MockData.FormatVND(court.PricePerHour)"
+                                                        data-time="@slot" 
+                                                        data-nexttime="@nextSlot"
+                                                        style="display: block; width: 100%;">Trống</button>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Slot Legend -->
+                <div class="slot-legend" style="margin-top: 1.25rem;">
+                    <div style="display: flex; align-items: center; gap: 0.375rem;">
+                        <span class="legend-dot" style="background-color: #ecfdf5; border: 1px solid #a7f3d0;"></span>
+                        <span class="text-secondary">Trống (Sẵn sàng đặt)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.375rem;">
+                        <span class="legend-dot" style="background-color: #fffbeb; border: 1px solid #fde68a;"></span>
+                        <span class="text-secondary">Chờ duyệt (Chủ sân chưa xác nhận)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.375rem;">
+                        <span class="legend-dot" style="background-color: #f1f5f9; border: 1px solid #e2e8f0;"></span>
+                        <span class="text-secondary">Đã đặt</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Confirmation (Desktop) -->
+        <aside class="booking-sidebar md-show">
+            <div class="card booking-sidebar-card" style="border-color: var(--cb-border); background-color: white;">
+                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">Xác nhận đặt sân</h3>
+                <p class="text-xs text-muted" style="margin-bottom: 1.25rem;">Chọn một khung giờ trống bên bảng lịch để xem chi tiết chi phí.</p>
+                
+                <!-- Unselected State -->
+                <div id="booking-sidebar-empty" style="border: 1px dashed var(--cb-border); border-radius: var(--cb-radius); padding: 2rem 1.5rem; text-align: center; color: var(--cb-text-muted);">
+                    <i data-lucide="calendar-days" style="width:24px;height:24px; margin: 0 auto 0.5rem; color: var(--cb-text-muted);"></i>
+                    <div class="text-sm">Chưa có khung giờ nào được chọn</div>
+                </div>
+
+                <!-- Selected State -->
+                <div id="booking-sidebar-filled" style="display: none;">
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.875rem;">
+                        <div class="flex-between">
+                            <span class="text-secondary">Sân cầu lông</span>
+                            <span class="font-medium text-slate-900">@Model.Venue.Name</span>
+                        </div>
+                        <div class="flex-between">
+                            <span class="text-secondary">Sân thi đấu</span>
+                            <span class="font-medium text-slate-900" id="sidebar-court-name">-</span>
+                        </div>
+                        <div class="flex-between">
+                            <span class="text-secondary">Ngày chơi</span>
+                            <span class="font-medium text-slate-900" id="sidebar-date-label">-</span>
+                        </div>
+                        <div class="flex-between">
+                            <span class="text-secondary">Khung giờ</span>
+                            <span class="font-medium text-slate-900" id="sidebar-time-label">-</span>
+                        </div>
+                    </div>
+                    
+                    <div style="border-top: 1px dashed var(--cb-border); margin: 1rem 0;"></div>
+                    
+                    <div class="flex-between" style="margin-bottom: 1.25rem;">
+                        <span class="text-sm font-semibold text-slate-900">Tổng cộng</span>
+                        <span class="font-bold text-lg" style="color: var(--cb-primary)" id="sidebar-total-price">0₫</span>
+                    </div>
+
+                    <button class="btn btn-primary w-full" id="confirm-booking-btn-desktop">Xác nhận đặt sân</button>
+
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem; padding: 0.625rem; border-radius: var(--cb-radius); background-color: var(--cb-section-alt); border: 1px solid var(--cb-border-light);">
+                        <i data-lucide="info" style="width:14px;height:14px;color:var(--cb-primary);margin-top:2px;flex-shrink:0;"></i>
+                        <span class="text-xs text-muted" style="line-height: 1.4;">
+                            Khung giờ này sẽ được giữ chỗ tạm thời trong vòng 10 phút trong lúc bạn hoàn tất thanh toán.
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Mobile Sticky Booking Bar -->
+    <div class="mobile-booking-bar" id="mobile-booking-bar" style="display: none;">
+        <div class="flex-between w-full gap-3">
+            <div style="min-width: 0;">
+                <div class="text-xs text-muted truncate" id="mobile-booking-summary">-</div>
+                <div class="font-bold" style="color: var(--cb-primary); font-size: 1.125rem;" id="mobile-booking-price">0₫</div>
+            </div>
+            <button class="btn btn-primary" id="confirm-booking-btn-mobile">Đặt sân</button>
+        </div>
+    </div>
+</main>
+
+<!-- Booking Confirmation Modal -->
+<div class="modal-overlay" id="booking-modal-overlay">
+    <div class="modal animate-slideUp">
+        <h3 class="modal-title flex items-center gap-2" style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
+            <i data-lucide="check-square" style="width:20px;height:20px;color:var(--cb-primary)"></i> Xác nhận đặt sân
+        </h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.875rem; margin-bottom: 1.25rem;">
+            <p class="text-sm text-secondary" style="margin-bottom: 0.5rem; line-height: 1.5;">
+                Bạn đang thực hiện yêu cầu đặt sân với các thông tin chi tiết dưới đây:
+            </p>
+            <div style="background-color: var(--cb-section-alt); border: 1px solid var(--cb-border-light); border-radius: var(--cb-radius); padding: 0.875rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <div class="flex-between">
+                    <span class="text-muted">Cụm sân:</span>
+                    <strong class="text-slate-900">@Model.Venue.Name</strong>
+                </div>
+                <div class="flex-between">
+                    <span class="text-muted">Sân thi đấu:</span>
+                    <strong class="text-slate-900" id="modal-court-name">-</strong>
+                </div>
+                <div class="flex-between">
+                    <span class="text-muted">Ngày đặt:</span>
+                    <strong class="text-slate-900" id="modal-date-label">-</strong>
+                </div>
+                <div class="flex-between">
+                    <span class="text-muted">Khung giờ:</span>
+                    <strong class="text-slate-900" id="modal-time-label">-</strong>
+                </div>
+                <div style="border-top: 1px solid var(--cb-border-light); margin: 0.375rem 0;"></div>
+                <div class="flex-between">
+                    <span class="font-semibold text-slate-900">Thành tiền:</span>
+                    <strong class="font-bold text-base" style="color: var(--cb-primary)" id="modal-total-price">0₫</strong>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; padding: 0.75rem; border-radius: var(--cb-radius); background-color: var(--cb-primary-light); border: 1px solid var(--cb-primary-100); margin-bottom: 1.5rem;">
+            <i data-lucide="check-circle-2" style="width:16px;height:16px;color:var(--cb-primary);margin-top:2px;flex-shrink:0;"></i>
+            <span class="text-xs" style="color: var(--cb-primary-800); line-height: 1.4;">
+                Hệ thống sẽ chuyển tiếp thông tin đặt sân đến chủ sân. Bạn sẽ nhận được thông báo phản hồi chậm nhất trong vòng 5 – 10 phút.
+            </span>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="close-modal-btn">Hủy bỏ</button>
+            <button class="btn btn-primary" id="modal-submit-btn">Đồng ý đặt sân</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.venueId = "@Model.Venue.Id";
+    </script>
+    <script src="~/js/venue-booking.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,190 @@
+@model List<BadmintonCourtBooking.Models.Venue>
+@{
+    ViewData["Title"] = "Trang chủ - CourtBook";
+}
+
+<!-- Hero Section -->
+<section class="hero hero-gradient">
+    <div class="absolute inset-0 pointer-events-none text-emerald-700/10">
+        @await Html.PartialAsync("_CourtLines")
+    </div>
+    <div class="container hero-content">
+        <div class="animate-fadeIn">
+            <span class="badge badge-emerald mb-4">
+                <i data-lucide="sparkles" style="width:14px;height:14px;margin-right:4px"></i> Nền tảng đặt sân cầu lông
+            </span>
+            <h1 class="hero-title">
+                Đặt sân cầu lông dễ hơn,<br />quản lý sân gọn hơn.
+            </h1>
+            <p class="hero-desc">
+                CourtBook giúp người chơi tìm khung giờ trống chỉ trong vài chạm và giúp chủ sân tiếp cận khách hàng online mà không cần đầu tư hệ thống riêng.
+            </p>
+            <div class="hero-cta">
+                <a asp-controller="Venue" asp-action="Index" class="btn btn-primary btn-lg">
+                    <i data-lucide="search" style="width:18px;height:18px"></i> Tìm sân ngay
+                </a>
+                <a asp-controller="Owner" asp-action="Dashboard" class="btn btn-outline btn-lg" style="border-color:var(--cb-accent);color:var(--cb-accent-text);background-color:var(--cb-accent-light)">
+                    Đăng ký làm chủ sân
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="flex items-center gap-2"><i data-lucide="users" style="width:16px;height:16px;color:var(--cb-primary)"></i> 12.000+ người chơi</div>
+                <div class="flex items-center gap-2"><i data-lucide="shield-check" style="width:16px;height:16px;color:var(--cb-primary)"></i> 180+ cụm sân đã duyệt</div>
+            </div>
+        </div>
+
+        <!-- Mock booking card -->
+        <div class="relative animate-slideUp">
+            <div class="absolute -top-6 -left-6 w-32 h-32 bg-amber-100 rounded-2xl rotate-6" style="z-index: 1;"></div>
+            <div class="absolute -bottom-8 -right-4 w-28 h-28 bg-emerald-200/60 rounded-full" style="z-index: 1;"></div>
+            <div class="card hero-card" style="z-index: 2;">
+                <div class="flex-between">
+                    <div>
+                        <div class="font-semibold text-slate-900" style="font-size:1.125rem">Sân Cầu Lông Phú Thọ</div>
+                        <div class="text-xs text-muted flex items-center gap-1 mt-1">
+                            <i data-lucide="map-pin" style="width:12px;height:12px"></i> Quận 11, TP.HCM
+                        </div>
+                    </div>
+                    <span class="badge badge-emerald">Còn 4 slot</span>
+                </div>
+                <div class="text-xs text-muted" style="margin-top: 1rem;">Hôm nay · Thứ 4, 20/05/2026</div>
+                <div style="margin-top: 0.75rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                    <button class="slot-pill slot-available">17:00</button>
+                    <button class="slot-pill slot-selected">18:00</button>
+                    <button class="slot-pill slot-booked" disabled>19:00</button>
+                    <button class="slot-pill slot-available">20:00</button>
+                </div>
+                <div class="flex-between" style="margin-top: 1.25rem; border-top: 1px dashed var(--cb-border); padding-top: 1rem;">
+                    <div>
+                        <div class="text-xs text-muted">Sân VIP · 18:00 – 19:00</div>
+                        <div class="font-bold" style="color:var(--cb-primary); font-size:1.125rem">150.000₫</div>
+                    </div>
+                    <a asp-controller="Venue" asp-action="Detail" asp-route-id="v1" class="btn btn-primary">Đặt sân</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How it works -->
+<section style="background-color: white; padding: 4rem 0;">
+    <div class="container">
+        <div style="margin-bottom: 2.5rem;">
+            <h2 class="text-center">Đặt sân chỉ với 3 bước</h2>
+            <p class="text-secondary text-center" style="margin-top:0.25rem">Không gọi điện, không chờ tin nhắn phản hồi chậm trễ.</p>
+        </div>
+        <div class="grid-3 gap-6">
+            <div class="card" style="padding: 1.5rem; text-align: center; border-color: var(--cb-border);">
+                <div class="flex-center" style="width: 3rem; height: 3rem; border-radius: var(--cb-radius-lg); background-color: var(--cb-primary-light); color: var(--cb-primary); margin: 0 auto 1rem;">
+                    <i data-lucide="search" style="width:24px;height:24px"></i>
+                </div>
+                <div class="text-xs text-muted" style="margin-bottom: 0.25rem;">Bước 1</div>
+                <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem;">Chọn sân gần bạn</h3>
+                <p class="text-sm text-secondary">Lọc theo khu vực, mức giá, giờ hoạt động và trạng thái giờ trống thực tế.</p>
+            </div>
+            <div class="card" style="padding: 1.5rem; text-align: center; border-color: var(--cb-border);">
+                <div class="flex-center" style="width: 3rem; height: 3rem; border-radius: var(--cb-radius-lg); background-color: var(--cb-primary-light); color: var(--cb-primary); margin: 0 auto 1rem;">
+                    <i data-lucide="clock" style="width:24px;height:24px"></i>
+                </div>
+                <div class="text-xs text-muted" style="margin-bottom: 0.25rem;">Bước 2</div>
+                <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem;">Chọn khung giờ trống</h3>
+                <p class="text-sm text-secondary">Xem bảng slot trực quan, biết ngay khung giờ nào còn trống để đặt trực tiếp.</p>
+            </div>
+            <div class="card" style="padding: 1.5rem; text-align: center; border-color: var(--cb-border);">
+                <div class="flex-center" style="width: 3rem; height: 3rem; border-radius: var(--cb-radius-lg); background-color: var(--cb-primary-light); color: var(--cb-primary); margin: 0 auto 1rem;">
+                    <i data-lucide="calendar-check" style="width:24px;height:24px"></i>
+                </div>
+                <div class="text-xs text-muted" style="margin-bottom: 0.25rem;">Bước 3</div>
+                <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem;">Xác nhận & Đến chơi</h3>
+                <p class="text-sm text-secondary">Thanh toán giữ chỗ, nhận mã đặt sân tức thì và đến sân thi đấu đúng lịch hẹn.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- For Owners Section -->
+<section class="owner-section">
+    <div class="container owner-content grid-2 items-center">
+        <div>
+            <span class="badge badge-amber mb-3">Dành cho chủ sân</span>
+            <h2 class="text-slate-900 text-2xl" style="font-size: 1.75rem; font-weight: 700; line-height: 1.3;">
+                Quản lý cụm sân, theo dõi booking, tăng khách online.
+            </h2>
+            <p class="text-secondary mt-3" style="font-size:1rem; margin-bottom: 1.5rem;">
+                Bảng điều khiển gọn nhẹ dành riêng cho chủ sân không rành công nghệ. Bạn vẫn tiếp khách trực tiếp bình thường, nhưng việc quản lý sẽ nhàn hạ và chính xác hơn gấp bội.
+            </p>
+            <div class="grid-2 gap-3" style="margin-bottom: 1.75rem;">
+                <div class="flex items-center gap-2 text-sm text-secondary"><i data-lucide="check" style="width:16px;height:16px;color:var(--cb-primary)"></i> Quản lý nhiều sân con</div>
+                <div class="flex items-center gap-2 text-sm text-secondary"><i data-lucide="check" style="width:16px;height:16px;color:var(--cb-primary)"></i> Duyệt lịch trong 1 chạm</div>
+                <div class="flex items-center gap-2 text-sm text-secondary"><i data-lucide="check" style="width:16px;height:16px;color:var(--cb-primary)"></i> Thống kê doanh thu tuần</div>
+                <div class="flex items-center gap-2 text-sm text-secondary"><i data-lucide="check" style="width:16px;height:16px;color:var(--cb-primary)"></i> Tiếp cận hàng ngàn khách online</div>
+            </div>
+            <a asp-controller="Owner" asp-action="Dashboard" class="btn btn-primary btn-lg">
+                Vào trang quản lý <i data-lucide="arrow-right" style="width:16px;height:16px"></i>
+            </a>
+        </div>
+
+        <!-- Owner Mock Dashboard Card -->
+        <div class="card" style="padding: 1.25rem; border-color: var(--cb-border); background-color: white; box-shadow: var(--cb-card-shadow);">
+            <div class="flex-between" style="margin-bottom: 1rem;">
+                <div class="font-semibold">Doanh thu hôm nay</div>
+                <span class="badge badge-slate">20/05/2026</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+                <div style="background-color: var(--cb-section-alt); border: 1px solid var(--cb-border); border-radius: var(--cb-radius); padding: 0.5rem; text-align: center;">
+                    <div class="text-xs text-muted">Bookings</div>
+                    <div class="font-semibold text-slate-900" style="font-size:1.25rem; margin-top:0.25rem">23</div>
+                </div>
+                <div style="background-color: var(--cb-section-alt); border: 1px solid var(--cb-border); border-radius: var(--cb-radius); padding: 0.5rem; text-align: center;">
+                    <div class="text-xs text-muted">Chờ duyệt</div>
+                    <div class="font-semibold" style="font-size:1.25rem; margin-top:0.25rem; color: #d97706">4</div>
+                </div>
+                <div style="background-color: var(--cb-section-alt); border: 1px solid var(--cb-border); border-radius: var(--cb-radius); padding: 0.5rem; text-align: center;">
+                    <div class="text-xs text-muted">Doanh thu</div>
+                    <div class="font-semibold" style="font-size:1.25rem; margin-top:0.25rem; color: var(--cb-primary)">2.4tr</div>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div class="flex-between text-sm" style="border: 1px solid var(--cb-border-light); border-radius: var(--cb-radius); padding: 0.5rem 0.75rem;">
+                    <div>
+                        <div class="font-medium">Sân VIP · 19:00</div>
+                        <div class="text-xs text-muted">Nguyễn Minh Khoa</div>
+                    </div>
+                    <span class="status-badge status-pending">Chờ duyệt</span>
+                </div>
+                <div class="flex-between text-sm" style="border: 1px solid var(--cb-border-light); border-radius: var(--cb-radius); padding: 0.5rem 0.75rem;">
+                    <div>
+                        <div class="font-medium">Sân 2 · 20:00</div>
+                        <div class="text-xs text-muted">Lê Quốc Bảo</div>
+                    </div>
+                    <span class="status-badge status-confirmed">Đã duyệt</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Venues Section -->
+<section class="venues-section">
+    <div class="container">
+        <div class="flex-between" style="margin-bottom: 2rem;">
+            <div>
+                <h2>Sân nổi bật tuần này</h2>
+                <p class="text-secondary text-sm" style="margin-top:0.25rem">Các cụm sân uy tín, chất lượng vượt trội được người chơi đánh giá cực cao.</p>
+            </div>
+            <a asp-controller="Venue" asp-action="Index" class="btn btn-ghost" style="color: var(--cb-primary); font-weight: 600;">
+                Xem tất cả <i data-lucide="arrow-right" style="width:16px;height:16px;margin-left:4px"></i>
+            </a>
+        </div>
+        
+        <div class="grid-3 gap-6">
+            @foreach (var venue in Model)
+            {
+                @await Html.PartialAsync("_VenueCard", venue)
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+@await Html.PartialAsync("_Footer")

@@ -1,0 +1,32 @@
+@model BadmintonCourtBooking.Models.Venue
+
+<div class="card card-hover venue-card">
+    <div class="venue-card-image">
+        <!-- CourtLines SVG overlay -->
+        @await Html.PartialAsync("_CourtLines")
+        @if (Model.HasSlotsToday)
+        {
+            <span class="badge badge-emerald" style="position:absolute;top:0.75rem;left:0.75rem;z-index:2">Còn slot hôm nay</span>
+        }
+        @if (Model.ResponseFast)
+        {
+            <span class="badge badge-amber" style="position:absolute;top:0.75rem;right:0.75rem;z-index:2">Phản hồi nhanh</span>
+        }
+    </div>
+    <div class="venue-card-content">
+        <div style="display:flex;align-items:center;gap:0.375rem;margin-bottom:0.25rem">
+            <span class="text-xs text-muted">@Model.Courts.Count sân</span>
+        </div>
+        <h3 style="font-size:1rem;margin:0 0 0.25rem">@Model.Name</h3>
+        <p class="text-sm text-secondary" style="margin:0 0 0.5rem">@Model.District</p>
+        @if (!string.IsNullOrEmpty(Model.Highlight))
+        {
+            <p class="text-sm" style="color:var(--cb-primary);margin:0 0 0.5rem">@Model.Highlight</p>
+        }
+        <div class="venue-card-meta">
+            <span class="font-semibold" style="color:var(--cb-primary)">@BadmintonCourtBooking.Models.MockData.FormatVND(Model.PriceFrom)<span class="text-xs text-muted font-normal">/giờ</span></span>
+            <span class="text-sm">⭐ @Model.Rating (@Model.Reviews)</span>
+        </div>
+        <a asp-controller="Venue" asp-action="Detail" asp-route-id="@Model.Id" class="btn btn-outline w-full" style="margin-top:0.75rem">Xem chi tiết</a>
+    </div>
+</div>

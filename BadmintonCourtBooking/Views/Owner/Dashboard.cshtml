@@ -1,0 +1,241 @@
+@model BadmintonCourtBooking.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Chủ sân Dashboard - CourtBook";
+}
+
+<main class="container" style="padding-top: 1.5rem; padding-bottom: 4rem;">
+    <div class="owner-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="owner-sidebar">
+            <div class="card" style="padding: 0.5rem; border-color: var(--cb-border); background-color: white; position: sticky; top: 5rem;">
+                <nav class="sidebar-nav">
+                    <a asp-controller="Owner" asp-action="Dashboard" class="sidebar-link active">
+                        <i data-lucide="trending-up" style="width:16px;height:16px"></i> Tổng quan
+                    </a>
+                    <a asp-controller="Owner" asp-action="Venues" class="sidebar-link">
+                        <i data-lucide="building-2" style="width:16px;height:16px"></i> Cụm sân của tôi
+                    </a>
+                    <a asp-controller="Owner" asp-action="Venues" class="sidebar-link">
+                        <i data-lucide="layers" style="width:16px;height:16px"></i> Sân con
+                    </a>
+                    <a asp-controller="Owner" asp-action="Dashboard" class="sidebar-link">
+                        <i data-lucide="calendar-days" style="width:16px;height:16px"></i> Booking
+                    </a>
+                    <a asp-controller="Owner" asp-action="Dashboard" class="sidebar-link">
+                        <i data-lucide="wallet" style="width:16px;height:16px"></i> Hồ sơ chủ sân
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Console -->
+        <section style="min-width: 0;">
+            <!-- Header greeting -->
+            <div class="flex-between flex-wrap gap-3 mb-5">
+                <div>
+                    <h1 style="font-size: 1.75rem;">Chào, anh Hoàng Nam</h1>
+                    <p class="text-secondary text-sm" style="margin-top: 0.25rem;">Tổng quan hoạt động của cụm sân Phú Thọ — hôm nay 20/05/2026.</p>
+                </div>
+                <a asp-controller="Owner" asp-action="Venues" class="btn btn-primary">
+                    <i data-lucide="settings" style="width:16px;height:16px"></i> Quản lý cụm sân
+                </a>
+            </div>
+
+            <!-- Stats Row -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <!-- Stat Card 1: Bookings -->
+                <div class="card stat-card" style="border-color: var(--cb-border); background-color: white;">
+                    <div class="flex-between">
+                        <div>
+                            <div class="stat-label">Booking hôm nay</div>
+                            <div class="stat-value">@Model.TodayBookings</div>
+                        </div>
+                        <div class="stat-icon" style="background-color: var(--cb-primary-light); color: var(--cb-primary)">
+                            <i data-lucide="calendar-days" style="width:18px;height:18px"></i>
+                        </div>
+                    </div>
+                    <div class="stat-delta"><i data-lucide="trending-up" style="width:12px;height:12px;display:inline"></i> +12% so với hôm qua</div>
+                </div>
+
+                <!-- Stat Card 2: Pending -->
+                <div class="card stat-card" style="border-color: var(--cb-border); background-color: white;">
+                    <div class="flex-between">
+                        <div>
+                            <div class="stat-label">Chờ xác nhận</div>
+                            <div class="stat-value" style="color: #d97706">@Model.PendingCount</div>
+                        </div>
+                        <div class="stat-icon" style="background-color: #fffbeb; color: #d97706">
+                            <i data-lucide="clock" style="width:18px;height:18px"></i>
+                        </div>
+                    </div>
+                    <div class="stat-delta" style="color: #d97706">Cần xử lý gấp</div>
+                </div>
+
+                <!-- Stat Card 3: Revenue -->
+                <div class="card stat-card" style="border-color: var(--cb-border); background-color: white;">
+                    <div class="flex-between">
+                        <div>
+                            <div class="stat-label">Doanh thu dự kiến</div>
+                            <div class="stat-value" style="color: var(--cb-primary)">@BadmintonCourtBooking.Models.MockData.FormatVND(Model.Revenue)</div>
+                        </div>
+                        <div class="stat-icon" style="background-color: var(--cb-primary-light); color: var(--cb-primary)">
+                            <i data-lucide="wallet" style="width:18px;height:18px"></i>
+                        </div>
+                    </div>
+                    <div class="stat-delta"><i data-lucide="trending-up" style="width:12px;height:12px;display:inline"></i> +8% so với tuần trước</div>
+                </div>
+
+                <!-- Stat Card 4: Active Courts -->
+                <div class="card stat-card" style="border-color: var(--cb-border); background-color: white;">
+                    <div class="flex-between">
+                        <div>
+                            <div class="stat-label">Sân đang hoạt động</div>
+                            <div class="stat-value">@Model.ActiveCourts</div>
+                        </div>
+                        <div class="stat-icon" style="background-color: var(--cb-section-alt); color: var(--cb-text-secondary)">
+                            <i data-lucide="layers" style="width:18px;height:18px"></i>
+                        </div>
+                    </div>
+                    <div class="stat-delta" style="color: var(--cb-text-muted)">Hoạt động ổn định</div>
+                </div>
+            </div>
+
+            <!-- Charts & Allocation Grid -->
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 1.5rem;" class="grid-layout-desktop">
+                <!-- Bar Chart Panel -->
+                <div class="card" style="padding: 1.5rem; border-color: var(--cb-border); background-color: white;">
+                    <div class="flex-between" style="margin-bottom: 1.25rem;">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin: 0;">Doanh thu 7 ngày qua</h3>
+                        <span class="badge badge-slate">Triệu đồng (VND)</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="revenue-bar-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Slots Allocation Panel -->
+                <div class="card" style="padding: 1.5rem; border-color: var(--cb-border); background-color: white; height: fit-content;">
+                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.25rem;">Phân bổ slot hôm nay</h3>
+                    <div class="slot-distribution">
+                        <!-- Allocated: Booked -->
+                        <div>
+                            <div class="flex-between" style="font-size: 0.75rem; margin-bottom: 0.25rem;">
+                                <span class="text-secondary">Đã đặt</span>
+                                <span class="font-semibold text-slate-900">18 slots (78%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill progress-emerald" style="width: 78%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Allocated: Pending -->
+                        <div>
+                            <div class="flex-between" style="font-size: 0.75rem; margin-bottom: 0.25rem;">
+                                <span class="text-secondary">Chờ duyệt</span>
+                                <span class="font-semibold text-slate-900">4 slots (17%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill progress-amber" style="width: 17%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Allocated: Available -->
+                        <div>
+                            <div class="flex-between" style="font-size: 0.75rem; margin-bottom: 0.25rem;">
+                                <span class="text-secondary">Còn trống</span>
+                                <span class="font-semibold text-slate-900">1 slot (5%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill progress-slate" style="width: 5%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; padding: 0.75rem; border-radius: var(--cb-radius); background-color: var(--cb-primary-light); border: 1px solid var(--cb-primary-100); font-size: 0.75rem; color: var(--cb-primary-800); line-height: 1.4;">
+                        <strong>Gợi ý thông minh:</strong> Hãy bật thêm ưu đãi giờ vàng (khung 14:00 – 16:00) để nâng cao tỉ lệ lấp đầy sân vào các ngày trong tuần!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Bookings Table Panel -->
+            <div class="card" style="border-color: var(--cb-border); background-color: white;">
+                <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--cb-border)">
+                    <h3 style="font-size: 1.125rem; font-weight: 600; margin: 0;">Yêu cầu đặt sân gần đây</h3>
+                    <p class="text-xs text-muted" style="margin-top: 0.25rem;">Vui lòng duyệt hoặc từ chối lịch đặt của khách hàng sớm nhất có thể.</p>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table class="cb-table">
+                        <thead>
+                            <tr>
+                                <th>Khách hàng</th>
+                                <th>Sân con</th>
+                                <th>Thời gian</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th style="text-align: right;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var b in Model.RecentBookings)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="font-semibold text-slate-900">@b.Customer</div>
+                                        <div class="text-xs text-muted">@b.Phone</div>
+                                    </td>
+                                    <td class="font-medium text-slate-700">@b.Court</td>
+                                    <td class="text-slate-700">@b.Time</td>
+                                    <td class="font-semibold text-slate-900">@BadmintonCourtBooking.Models.MockData.FormatVND(b.Total)</td>
+                                    <td>@await Html.PartialAsync("_StatusBadge", b.Status)</td>
+                                    <td style="text-align: right; vertical-align: middle;">
+                                        @if (b.Status == BadmintonCourtBooking.Models.BookingStatus.Pending)
+                                        {
+                                            <div style="display: inline-flex; gap: 0.375rem; justify-content: flex-end;">
+                                                <form asp-controller="Owner" asp-action="RejectBooking" asp-route-id="@b.Id" method="post">
+                                                    <button type="submit" class="btn btn-destructive btn-sm">Từ chối</button>
+                                                </form>
+                                                <form asp-controller="Owner" asp-action="ApproveBooking" asp-route-id="@b.Id" method="post">
+                                                    <button type="submit" class="btn btn-primary btn-sm">Duyệt sân</button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-ghost btn-sm text-secondary" onclick="showToast('Xem chi tiết booking của @b.Customer', 'success')">Chi tiết</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+@section Scripts {
+    <!-- Render Chart data helper -->
+    <script>
+        window.revenueChartData = {
+            labels: @Html.Raw(Json.Serialize(Model.RevenueData.Select(x => x.Day))),
+            values: @Html.Raw(Json.Serialize(Model.RevenueData.Select(x => x.Value)))
+        };
+    </script>
+    <script src="~/js/owner-dashboard.js" asp-append-version="true"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check for TempData toast alerts
+            @if (TempData["ToastMessage"] != null)
+            {
+                <text>
+                if (window.showToast) {
+                    window.showToast("@TempData["ToastMessage"]", "@TempData["ToastType"]", 4000);
+                }
+                </text>
+            }
+        });
+    </script>
+}

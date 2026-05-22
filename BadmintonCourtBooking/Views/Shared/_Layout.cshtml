@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CourtBook</title>
+    <meta name="description" content="CourtBook - Nền tảng đặt sân cầu lông trực tuyến hàng đầu tại TP.HCM" />
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <!-- Chart.js (for owner dashboard) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/courtbook.css" asp-append-version="true" />
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="main-header">
+        <div class="header-inner">
+            <!-- Logo -->
+            <a asp-controller="Home" asp-action="Index" class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 19l9-9" /><circle cx="16" cy="7" r="3" /><path d="M3 21l4-1 1-3" />
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <div class="logo-name">CourtBook</div>
+                    <div class="logo-sub">Đặt sân cầu lông</div>
+                </div>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="nav-links md-show" id="desktop-nav">
+                <a asp-controller="Home" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">Trang chủ</a>
+                <a asp-controller="Venue" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Venue" ? "active" : "")">Tìm sân</a>
+                <a asp-controller="Booking" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Booking" ? "active" : "")">Lịch của tôi</a>
+                <a asp-controller="Owner" asp-action="Dashboard" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Owner" ? "active" : "")">Dành cho chủ sân</a>
+                <a asp-controller="Admin" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" ? "active" : "")">
+                    <i data-lucide="shield" style="width:14px;height:14px"></i> Admin
+                </a>
+            </nav>
+
+            <!-- Auth Buttons (desktop) -->
+            <div class="auth-buttons md-show">
+                <button class="btn btn-ghost">Đăng nhập</button>
+                <button class="btn btn-primary">Đăng ký</button>
+            </div>
+
+            <!-- Hamburger (mobile) -->
+            <button class="btn btn-icon btn-ghost mobile-only" id="hamburger-btn" aria-label="Menu">
+                <i data-lucide="menu" style="width:20px;height:20px"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="flex-between" style="margin-bottom:1.5rem">
+            <span class="font-semibold">Menu</span>
+            <button class="btn btn-icon btn-ghost" id="close-menu-btn">
+                <i data-lucide="x" style="width:20px;height:20px"></i>
+            </button>
+        </div>
+        <a asp-controller="Home" asp-action="Index" class="nav-link">Trang chủ</a>
+        <a asp-controller="Venue" asp-action="Index" class="nav-link">Tìm sân</a>
+        <a asp-controller="Booking" asp-action="Index" class="nav-link">Lịch của tôi</a>
+        <a asp-controller="Owner" asp-action="Dashboard" class="nav-link">Dành cho chủ sân</a>
+        <a asp-controller="Admin" asp-action="Index" class="nav-link">Admin</a>
+        <div style="border-top:1px solid var(--cb-border);margin:1rem 0"></div>
+        <button class="btn btn-outline w-full">Đăng nhập</button>
+        <button class="btn btn-primary w-full" style="margin-top:0.5rem">Đăng ký</button>
+    </div>
+
+    <!-- Toast Container -->
+    @await Html.PartialAsync("_Toast")
+
+    <!-- Main Content -->
+    <main>
+        @RenderBody()
+    </main>
+
+    <!-- Scripts -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    <script>lucide.createIcons();</script>
+</body>
+</html>

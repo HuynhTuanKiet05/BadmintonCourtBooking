@@ -1,0 +1,14 @@
+@model BadmintonCourtBooking.Models.BookingStatus
+
+@{
+    var (cssClass, label) = Model switch
+    {
+        BadmintonCourtBooking.Models.BookingStatus.Confirmed => ("status-confirmed", "Đã xác nhận"),
+        BadmintonCourtBooking.Models.BookingStatus.Pending => ("status-pending", "Chờ xác nhận"),
+        BadmintonCourtBooking.Models.BookingStatus.Completed => ("status-completed", "Đã hoàn thành"),
+        BadmintonCourtBooking.Models.BookingStatus.Cancelled => ("status-cancelled", "Đã hủy"),
+        _ => ("status-pending", "Không xác định")
+    };
+}
+
+<span class="status-badge @cssClass">@label</span>

@@ -1,0 +1,248 @@
+@model BadmintonCourtBooking.Models.AdminViewModel
+@{
+    ViewData["Title"] = "Hệ thống Quản trị CourtBook";
+}
+
+<div class="admin-page">
+    <!-- Header Page -->
+    <div class="flex-between flex-wrap gap-3 mb-5" style="margin-bottom: 2rem;">
+        <div>
+            <h1 class="page-title" style="font-size: 1.75rem; font-weight: 700; color: var(--cb-text);">Hệ thống Quản trị CourtBook</h1>
+            <p class="page-subtitle" style="color: var(--cb-text-secondary); margin-top: 0.25rem;">Bảng quản lý hoạt động toàn diện và phê duyệt cụm sân cầu lông trên toàn hệ thống.</p>
+        </div>
+        <div class="flex-gap" style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-outline btn-sm" onclick="showToast('Xuất báo cáo hệ thống thành công!', 'success')">
+                <i data-lucide="download" style="width:14px;height:14px"></i> Xuất báo cáo
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="showToast('Đang quét bảo mật toàn bộ hệ thống...', 'success')">
+                <i data-lucide="shield-check" style="width:14px;height:14px"></i> Kiểm tra bảo mật
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Dashboard Cards -->
+    <div class="admin-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        <!-- Card 1: Total Owners -->
+        <div class="card stat-card" style="border-color: var(--cb-border); background-color: white; padding: 1.25rem;">
+            <div class="flex-between">
+                <div>
+                    <div class="stat-label" style="font-size: 0.8125rem; color: var(--cb-text-muted); font-weight: 500;">Tổng số Chủ sân</div>
+                    <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: var(--cb-text); margin-top: 0.25rem;">@Model.TotalOwners</div>
+                </div>
+                <div class="stat-icon" style="background-color: #fffbeb; color: #d97706; padding: 0.5rem; border-radius: var(--cb-radius); display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="users" style="width:20px;height:20px"></i>
+                </div>
+            </div>
+            <div class="stat-delta" style="font-size: 0.75rem; margin-top: 0.5rem; color: var(--cb-primary); display: flex; align-items: center; gap: 0.25rem;">
+                <i data-lucide="trending-up" style="width:12px;height:12px"></i> +4 chủ sân mới tháng này
+            </div>
+        </div>
+
+        <!-- Card 2: Total Customers -->
+        <div class="card stat-card" style="border-color: var(--cb-border); background-color: white; padding: 1.25rem;">
+            <div class="flex-between">
+                <div>
+                    <div class="stat-label" style="font-size: 0.8125rem; color: var(--cb-text-muted); font-weight: 500;">Người chơi đăng ký</div>
+                    <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: var(--cb-text); margin-top: 0.25rem;">@Model.TotalCustomers.ToString("N0")</div>
+                </div>
+                <div class="stat-icon" style="background-color: var(--cb-primary-light); color: var(--cb-primary); padding: 0.5rem; border-radius: var(--cb-radius); display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="user-check" style="width:20px;height:20px"></i>
+                </div>
+            </div>
+            <div class="stat-delta" style="font-size: 0.75rem; margin-top: 0.5rem; color: var(--cb-primary); display: flex; align-items: center; gap: 0.25rem;">
+                <i data-lucide="trending-up" style="width:12px;height:12px"></i> +18% lượt đăng ký mới hàng tuần
+            </div>
+        </div>
+
+        <!-- Card 3: Total Venues -->
+        <div class="card stat-card" style="border-color: var(--cb-border); background-color: white; padding: 1.25rem;">
+            <div class="flex-between">
+                <div>
+                    <div class="stat-label" style="font-size: 0.8125rem; color: var(--cb-text-muted); font-weight: 500;">Cụm sân đang hoạt động</div>
+                    <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: var(--cb-text); margin-top: 0.25rem;">@Model.TotalVenues</div>
+                </div>
+                <div class="stat-icon" style="background-color: #f0f9ff; color: #0284c7; padding: 0.5rem; border-radius: var(--cb-radius); display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="building-2" style="width:20px;height:20px"></i>
+                </div>
+            </div>
+            <div class="stat-delta" style="font-size: 0.75rem; margin-top: 0.5rem; color: var(--cb-text-secondary); display: flex; align-items: center; gap: 0.25rem;">
+                <i data-lucide="activity" style="width:12px;height:12px"></i> Phủ sóng 6 quận huyện TP.HCM
+            </div>
+        </div>
+
+        <!-- Card 4: Monthly Bookings -->
+        <div class="card stat-card" style="border-color: var(--cb-border); background-color: white; padding: 1.25rem;">
+            <div class="flex-between">
+                <div>
+                    <div class="stat-label" style="font-size: 0.8125rem; color: var(--cb-text-muted); font-weight: 500;">Lượt đặt sân tháng này</div>
+                    <div class="stat-value" style="font-size: 1.5rem; font-weight: 700; color: var(--cb-text); margin-top: 0.25rem;">@Model.MonthlyBookings.ToString("N0")</div>
+                </div>
+                <div class="stat-icon" style="background-color: #faf5ff; color: #7c3aed; padding: 0.5rem; border-radius: var(--cb-radius); display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="calendar-check" style="width:20px;height:20px"></i>
+                </div>
+            </div>
+            <div class="stat-delta" style="font-size: 0.75rem; margin-top: 0.5rem; color: var(--cb-primary); display: flex; align-items: center; gap: 0.25rem;">
+                <i data-lucide="trending-up" style="width:12px;height:12px"></i> +12.4% hiệu suất khai thác sân
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content layout -->
+    <div class="admin-content">
+        <!-- Main Panel (Left): Pending Approvals -->
+        <section style="min-width: 0;">
+            <div class="card" style="border-color: var(--cb-border); background-color: white; margin-bottom: 1.5rem; padding: 1.5rem;">
+                <div style="margin-bottom: 1.25rem;">
+                    <h3 style="font-size: 1.125rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="clipboard-list" style="color: var(--cb-primary); width:20px; height:20px"></i>
+                        Yêu cầu duyệt đăng ký cụm sân mới
+                    </h3>
+                    <p class="text-xs text-muted" style="margin-top: 0.25rem; color: var(--cb-text-muted); font-size: 0.8125rem;">
+                        Vui lòng thẩm định thông tin pháp lý, chất lượng hình ảnh và quy mô sân của chủ sở hữu trước khi phê duyệt đưa lên sàn thương mại.
+                    </p>
+                </div>
+
+                @if (Model.PendingVenues.Count > 0)
+                {
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1rem;">
+                        @foreach (var pv in Model.PendingVenues)
+                        {
+                            <div class="approval-card">
+                                <div class="approval-card-header">
+                                    <div>
+                                        <h4 class="approval-card-venue" style="font-size: 0.9375rem; font-weight: 600; color: var(--cb-text); margin: 0;">@pv.Name</h4>
+                                        <p class="approval-card-owner" style="font-size: 0.8125rem; color: var(--cb-text-muted); margin: 0.125rem 0 0 0;">Chủ sân: @pv.Owner</p>
+                                    </div>
+                                    <span class="badge badge-amber" style="background-color: #fffbeb; color: #d97706; font-size: 0.75rem; border: 1px solid #fde68a;">Chờ duyệt</span>
+                                </div>
+                                
+                                <div style="font-size: 0.8125rem; color: var(--cb-text-secondary); display: flex; flex-direction: column; gap: 0.375rem; margin-top: 0.5rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.375rem;">
+                                        <i data-lucide="map-pin" style="width:14px;height:14px;color:var(--cb-text-muted)"></i>
+                                        <span>Khu vực: <strong>@pv.District</strong></span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 0.375rem;">
+                                        <i data-lucide="layers" style="width:14px;height:14px;color:var(--cb-text-muted)"></i>
+                                        <span>Quy mô: <strong>@pv.Courts sân con</strong></span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 0.375rem;">
+                                        <i data-lucide="calendar" style="width:14px;height:14px;color:var(--cb-text-muted)"></i>
+                                        <span>Ngày gửi hồ sơ: <span style="color: var(--cb-text);">@pv.Submitted</span></span>
+                                    </div>
+                                </div>
+
+                                <div class="divider divider-light" style="margin: 0.75rem 0 0.5rem 0;"></div>
+
+                                <div class="approval-actions" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.25rem;">
+                                    <form asp-controller="Admin" asp-action="RejectVenue" asp-route-id="@pv.Id" method="post">
+                                        <button type="submit" class="btn btn-outline btn-sm" style="color: var(--cb-rose); border-color: #fecdd3; background-color: transparent;" onclick="return confirm('Bạn có chắc chắn muốn TỪ CHỐI hồ sơ đăng ký của sân này không?')">
+                                            Từ chối
+                                        </button>
+                                    </form>
+                                    <form asp-controller="Admin" asp-action="ApproveVenue" asp-route-id="@pv.Id" method="post">
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            Duyệt & Kích hoạt
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div style="text-align: center; padding: 3rem 1.5rem; border: 1px dashed var(--cb-border); border-radius: var(--cb-radius); background-color: var(--cb-section-alt);">
+                        <div style="width: 3.5rem; height: 3.5rem; background-color: var(--cb-primary-light); color: var(--cb-primary); border-radius: 9999px; display: grid; place-items: center; margin: 0 auto 1rem;">
+                            <i data-lucide="check-circle" style="width: 24px; height: 24px;"></i>
+                        </div>
+                        <h4 style="font-size: 1rem; font-weight: 600; color: var(--cb-text); margin: 0 0 0.25rem 0;">Tuyệt vời! Không còn hồ sơ chờ duyệt</h4>
+                        <p style="font-size: 0.8125rem; color: var(--cb-text-secondary); margin: 0; max-width: 320px; margin: 0 auto;">
+                            Tất cả hồ sơ đăng ký kinh doanh từ đối tác chủ sân đều đã được xử lý hoàn tất.
+                        </p>
+                    </div>
+                }
+            </div>
+
+            <!-- Regulatory Guidelines Notice -->
+            <div class="card" style="border-color: var(--cb-border); background-color: #ecfdf5; border-left: 4px solid var(--cb-primary); padding: 1rem 1.25rem; border-radius: var(--cb-radius);">
+                <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                    <i data-lucide="info" style="color: var(--cb-primary); width: 20px; height: 20px; flex-shrink: 0; margin-top: 0.125rem;"></i>
+                    <div>
+                        <h4 style="font-size: 0.875rem; font-weight: 600; color: #065f46; margin: 0 0 0.25rem 0;">Nguyên tắc Kiểm duyệt & Vận hành Sân Cầu lông</h4>
+                        <p style="font-size: 0.8125rem; color: #047857; margin: 0; line-height: 1.5;">
+                            Trước khi ấn nút <strong>Duyệt & Kích hoạt</strong>, vui lòng đảm bảo chủ sân đã bổ sung đầy đủ giấy phép đăng ký kinh doanh thể dục thể thao hợp lệ, có ít nhất 1 số điện thoại đường dây nóng khả dụng và chính sách hoàn tiền cọc rõ ràng. Hệ thống sẽ tự động gửi email chào mừng kèm tài khoản đăng nhập khi được duyệt.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sidebar Panel (Right): Recent Registered Users -->
+        <aside style="min-width: 0;">
+            <div class="card" style="border-color: var(--cb-border); background-color: white; padding: 1.5rem;">
+                <div style="margin-bottom: 1.25rem;">
+                    <h3 style="font-size: 1.125rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="user-plus" style="color: #0284c7; width:20px; height:20px"></i>
+                        Thành viên mới nhất
+                    </h3>
+                    <p class="text-xs text-muted" style="margin-top: 0.25rem; color: var(--cb-text-muted); font-size: 0.8125rem;">
+                        Lượt đăng ký tài khoản người dùng gần đây.
+                    </p>
+                </div>
+
+                <div class="divider divider-light" style="margin: 0.5rem 0 0.75rem 0;"></div>
+
+                <div class="user-list" style="display: flex; flex-direction: column;">
+                    @foreach (var user in Model.RecentUsers)
+                    {
+                        <div class="user-item">
+                            <div class="user-avatar-placeholder">
+                                <i data-lucide="user" style="width:16px; height:16px"></i>
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name">@user.Name</div>
+                                <div class="user-email">Tham gia: @user.JoinDate</div>
+                            </div>
+                            <div class="user-actions">
+                                @if (user.Role == "Chủ sân")
+                                {
+                                    <span class="badge badge-amber" style="background-color: #fffbeb; color: #d97706; font-size: 0.75rem; border: 1px solid #fde68a; padding: 0.125rem 0.5rem;">
+                                        Chủ sân
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-emerald" style="background-color: var(--cb-primary-light); color: var(--cb-primary); font-size: 0.75rem; border: 1px solid #a7f3d0; padding: 0.125rem 0.5rem;">
+                                        Người chơi
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="divider divider-light" style="margin: 1rem 0;"></div>
+                
+                <button class="btn btn-outline w-full" style="justify-content: center; font-size: 0.8125rem; padding: 0.5rem;" onclick="showToast('Chức năng Quản lý phân quyền toàn diện sẽ ra mắt ở phiên bản kế tiếp!', 'info')">
+                    Xem tất cả thành viên (@Model.TotalCustomers)
+                </button>
+            </div>
+        </aside>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check for TempData toast alerts
+            @if (TempData["ToastMessage"] != null)
+            {
+                <text>
+                if (window.showToast) {
+                    window.showToast("@TempData["ToastMessage"]", "@TempData["ToastType"]", 4000);
+                }
+                </text>
+            }
+        });
+    </script>
+}
