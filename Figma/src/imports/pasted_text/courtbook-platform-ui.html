@@ -1,0 +1,339 @@
+Dưới đây là prompt bạn có thể copy thẳng vào **Stitch / AI UI generator**. Mình viết theo kiểu “brief chuyên nghiệp”, tránh vibe AI template quá đà.
+
+---
+
+## Prompt giao diện CourtBook Platform
+
+Thiết kế giao diện web cho dự án **CourtBook Platform** — một nền tảng kết nối **chủ sân cầu lông** và **người chơi cầu lông**. Website cho phép chủ sân đăng ký địa điểm, quản lý sân, quản lý lịch đặt; người chơi có thể tìm sân, xem khung giờ trống và đặt sân online.
+
+Yêu cầu tạo giao diện bằng **HTML, CSS, JavaScript thuần**, không cần framework phức tạp. Giao diện phải đơn giản, hiện đại, dễ code lại bằng ASP.NET Core MVC Razor View.
+
+### 1. Phong cách tổng thể
+
+Thiết kế theo hướng:
+
+* Clean, hiện đại, chuyên nghiệp nhưng không quá “startup template”.
+* Giao diện phải giống một sản phẩm thật ở Việt Nam, không nhìn như AI tạo hàng loạt.
+* Không dùng quá nhiều gradient, glassmorphism, card bóng lòe loẹt hoặc icon 3D generic.
+* Ưu tiên bố cục rõ ràng, khoảng trắng tốt, typography dễ đọc.
+* Có cảm giác thể thao, năng động, nhưng vẫn đáng tin cậy cho chủ sân và khách đặt sân.
+
+### 2. Visual identity
+
+Chủ đề màu:
+
+* Màu chính: xanh lá đậm hoặc xanh emerald, gợi cảm giác thể thao và sân cầu lông.
+* Màu phụ: vàng nhạt / cam nhẹ để nhấn CTA như “Đặt sân ngay”.
+* Màu nền: trắng ngà hoặc xám rất nhạt, tránh nền trắng tinh quá lạnh.
+* Màu chữ: đen than, xám đậm.
+* Trạng thái:
+
+  * Còn trống: xanh lá
+  * Đã đặt: xám hoặc đỏ nhạt
+  * Chờ xác nhận: vàng
+  * Đã xác nhận: xanh
+  * Đã hủy: đỏ/xám
+
+Không dùng palette quá neon. Màu phải dịu, nhìn lâu không mỏi mắt.
+
+### 3. Chi tiết giúp giao diện bớt “AI”
+
+Hãy thêm các chi tiết nhỏ có chủ đích:
+
+* Dùng motif đường kẻ sân cầu lông rất nhẹ ở background hero hoặc section booking.
+* Các card sân không đều nhau y hệt; có variation nhẹ về nội dung, badge, khoảng cách.
+* Nội dung dùng dữ liệu mẫu Việt Nam thật hơn:
+
+  * “Sân Cầu Lông Phú Thọ”
+  * “Tân Bình Badminton Hub”
+  * “Sân Cầu Lông Bình Thạnh”
+  * “Quận 10, TP.HCM”
+  * “Mở cửa 06:00 - 22:00”
+* Microcopy tự nhiên:
+
+  * “Còn 4 khung giờ đẹp hôm nay”
+  * “Phù hợp đánh đôi sau giờ làm”
+  * “Chủ sân phản hồi nhanh”
+* Tránh dùng những câu quá chung chung như “Best experience for everyone”.
+* Không dùng ảnh stock quá bóng bẩy. Nếu cần ảnh, dùng placeholder dạng block có pattern sân cầu lông hoặc ảnh sân thật giả lập đơn giản.
+
+### 4. Các trang/màn hình cần thiết
+
+Tạo một prototype gồm các màn hình chính sau:
+
+#### A. Landing Page
+Mục tiêu: giới thiệu nền tảng cho cả người chơi và chủ sân.
+
+Thành phần:
+
+* Header có logo CourtBook.
+* Navbar:
+
+  * Trang chủ
+  * Tìm sân
+  * Dành cho chủ sân
+  * Đăng nhập
+  * Nút nổi bật: “Đăng ký”
+* Hero section:
+
+  * Tiêu đề: “Đặt sân cầu lông dễ hơn, quản lý sân gọn hơn”
+  * Mô tả ngắn: “CourtBook giúp người chơi tìm khung giờ trống và giúp chủ sân tiếp cận khách hàng online.”
+  * CTA chính: “Tìm sân ngay”
+  * CTA phụ: “Đăng ký làm chủ sân”
+* Bên phải hero hiển thị mockup card đặt sân:
+
+  * Tên sân
+  * Ngày
+  * Các slot giờ trống
+  * Nút đặt sân
+* Section “Cách hoạt động” gồm 3 bước:
+
+  1. Chọn sân
+  2. Chọn khung giờ trống
+  3. Xác nhận đặt sân
+* Section “Dành cho chủ sân”:
+
+  * Quản lý cụm sân
+  * Theo dõi booking
+  * Tăng khả năng tiếp cận khách
+* Section sân nổi bật.
+* Footer đơn giản.
+
+#### B. Trang danh sách sân cho Customer
+
+Mục tiêu: người chơi tìm sân.
+
+Layout:
+
+* Sidebar/filter bên trái trên desktop, thành top filter trên mobile.
+* Bộ lọc:
+
+  * Khu vực
+  * Giá mỗi giờ
+  * Giờ mở cửa
+  * Trạng thái còn slot hôm nay
+* Thanh search: “Tìm theo tên sân hoặc khu vực”
+* Danh sách card sân:
+
+  * Tên cụm sân
+  * Địa chỉ
+  * Giờ mở cửa
+  * Giá từ bao nhiêu/giờ
+  * Số sân con
+  * Badge “Còn slot hôm nay”
+  * Nút “Xem chi tiết”
+* Card phải nhìn thực tế, không quá đồng đều.
+* Có empty state nếu không tìm thấy sân.
+
+#### C. Trang chi tiết cụm sân
+
+Mục tiêu: xem thông tin và chọn khung giờ.
+
+Thành phần:
+
+* Header chi tiết:
+
+  * Tên cụm sân
+  * Địa chỉ
+  * Giờ mở cửa
+  * Badge trạng thái
+* Khu vực thông tin:
+
+  * Mô tả
+  * Danh sách sân con: Sân 1, Sân 2, Sân VIP
+  * Giá từng sân
+* Bộ chọn ngày.
+* Bảng khung giờ trống:
+
+  * Cột: Khung giờ
+  * Các sân con
+  * Mỗi ô là trạng thái:
+
+    * Còn trống
+    * Đã đặt
+    * Chờ xác nhận
+* Khi người dùng chọn một slot, hiển thị panel xác nhận bên phải:
+
+  * Tên sân
+  * Ngày
+  * Giờ
+  * Giá
+  * Nút “Xác nhận đặt sân”
+* Trên mobile, panel xác nhận nên chuyển thành bottom sticky bar.
+
+#### D. Trang My Bookings của Customer
+
+Mục tiêu: khách xem lịch sử đặt sân.
+
+Thành phần:
+
+* Tabs:
+
+  * Sắp tới
+  * Đã hoàn thành
+  * Đã hủy
+* Booking card:
+
+  * Tên cụm sân
+  * Sân con
+  * Ngày giờ
+  * Tổng tiền
+  * Trạng thái
+  * Nút “Hủy lịch” nếu còn hợp lệ
+* Có trạng thái “Không có lịch đặt nào” với CTA “Tìm sân ngay”.
+
+#### E. Owner Dashboard
+
+Mục tiêu: chủ sân quản lý hoạt động.
+
+Thành phần:
+
+* Sidebar:
+
+  * Tổng quan
+  * Cụm sân của tôi
+  * Sân con
+  * Booking
+  * Hồ sơ chủ sân
+* Topbar có tên owner.
+* Dashboard cards:
+
+  * Booking hôm nay
+  * Booking chờ xác nhận
+  * Doanh thu dự kiến
+  * Số sân đang hoạt động
+* Bảng booking gần đây:
+
+  * Khách hàng
+  * Sân
+  * Thời gian
+  * Trạng thái
+  * Action xác nhận/hủy
+
+#### F. Trang Owner quản lý cụm sân và sân con
+
+Mục tiêu: chủ sân tạo và chỉnh sửa địa điểm.
+
+Cần có:
+
+* Danh sách cụm sân của owner.
+* Nút “Thêm cụm sân”.
+* Form tạo/sửa cụm sân:
+
+  * Tên cụm sân
+  * Địa chỉ
+  * Mô tả
+  * Giờ mở cửa
+  * Giờ đóng cửa
+  * Trạng thái hoạt động
+* Danh sách sân con trong cụm sân:
+
+  * Tên sân
+  * Giá/giờ
+  * Trạng thái
+  * Nút sửa/xóa mềm
+* Form thêm sân con:
+
+  * Tên sân
+  * Giá mỗi giờ
+  * Mô tả ngắn
+
+#### G. Platform Admin tối giản
+
+Mục tiêu: quản trị nền tảng.
+
+Cần có:
+
+* Dashboard tổng quan:
+
+  * Tổng chủ sân
+  * Tổng khách hàng
+  * Tổng cụm sân
+  * Tổng booking
+* Danh sách cụm sân chờ duyệt.
+* Nút “Duyệt” / “Từ chối”.
+* Bảng user/owner đơn giản.
+
+### 5. Component design
+
+Thiết kế các component reusable:
+
+* Button primary, secondary, danger, ghost.
+* Input, select, date picker style.
+* Badge trạng thái booking.
+* Court card.
+* Venue card.
+* Booking card.
+* Empty state.
+* Confirmation modal.
+* Toast notification.
+* Dashboard stat card.
+* Table responsive.
+
+Các component phải có class CSS rõ ràng để sau này đưa vào Razor View dễ.
+
+### 6. UX rules
+
+* CTA chính phải nổi bật nhưng không gắt.
+* Form không quá dài, chia nhóm rõ ràng.
+* Trạng thái booking phải nhìn phát hiểu ngay.
+* Slot trống phải dễ bấm, slot đã đặt phải disable rõ.
+* Có hover state, focus state, disabled state.
+* Có loading skeleton hoặc trạng thái “Đang tải khung giờ...”.
+* Có thông báo lỗi:
+
+  * “Khung giờ này vừa có người đặt. Vui lòng chọn khung giờ khác.”
+  * “Bạn cần đăng nhập để đặt sân.”
+  * “Chủ sân chưa được duyệt.”
+* Giao diện mobile phải dùng được thật, không chỉ co lại.
+
+### 7. Layout responsive
+
+Breakpoint:
+
+* Desktop: sidebar + content.
+* Tablet: filter thu gọn.
+* Mobile:
+
+  * Navbar chuyển thành menu.
+  * Card xếp một cột.
+  * Booking confirmation thành sticky bottom bar.
+  * Table chuyển thành card list.
+
+### 8. Code yêu cầu
+
+Tạo code bằng:
+
+* `index.html`
+* `styles.css`
+* `script.js`
+
+Nếu công cụ chỉ hỗ trợ một file, hãy viết single HTML file có CSS và JS bên trong.
+
+Yêu cầu code:
+
+* HTML semantic.
+* CSS dùng biến `:root`.
+* Không dùng Bootstrap nếu không cần, vì muốn giao diện có cá tính riêng.
+* JavaScript chỉ để demo:
+
+  * chuyển tab
+  * chọn ngày
+  * chọn slot
+  * mở modal
+  * filter đơn giản
+* Class name rõ ràng, dễ chuyển sang ASP.NET Core MVC Razor.
+* Không cần backend thật.
+* Dữ liệu mẫu hard-code nhưng phải giống dữ liệu thật.
+
+### 9. Cảm giác cuối cùng cần đạt
+
+Giao diện phải cho cảm giác:
+
+* Đây là một nền tảng đặt sân thật, có thể triển khai ở Việt Nam.
+* Người chơi nhìn vào biết đặt sân ở đâu, giờ nào còn trống.
+* Chủ sân nhìn vào thấy quản lý được sân và booking.
+* Đơn giản, dễ code, dễ bảo vệ đồ án.
+* Không bị giống template AI phổ biến.
+
+Hãy tạo giao diện hoàn chỉnh, nhất quán, có đủ các màn hình chính, ưu tiên tính rõ ràng và khả năng chuyển sang ASP.NET Core MVC.

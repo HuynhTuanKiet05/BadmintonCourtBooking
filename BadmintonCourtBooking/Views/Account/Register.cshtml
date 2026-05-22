@@ -1,0 +1,814 @@
+@model BadmintonCourtBooking.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký tài khoản";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CourtBook</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/courtbook.css" asp-append-version="true" />
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafaf7;
+            overflow-x: hidden;
+        }
+
+        .auth-container {
+            min-height: 100vh;
+        }
+
+        .left-banner {
+            background-color: #065f46; /* emerald-800 */
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 3.5rem;
+            color: #ffffff;
+        }
+
+        .court-lines-overlay {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            color: rgba(52, 211, 153, 0.12); /* emerald-400/12 */
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .left-banner-gradient {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(4, 120, 87, 0.4) 0%, rgba(6, 95, 70, 0) 50%, rgba(6, 78, 59, 0.3) 100%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .left-banner-content {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .logo-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #d1fae5;
+            font-weight: 700;
+            font-size: 1.25rem;
+            text-decoration: none;
+        }
+
+        .logo-icon-auth {
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: grid;
+            place-items: center;
+        }
+
+        .stat-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .right-form-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1.5rem;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 460px;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        .role-btn {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-align: left;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .role-btn:hover {
+            border-color: #cbd5e1;
+        }
+
+        .role-btn.active {
+            border-color: #059669; /* emerald-600 */
+            background-color: #ecfdf5; /* emerald-5 */
+            box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.5);
+        }
+
+        .role-icon-box {
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 0.375rem;
+            background-color: #f1f5f9;
+            color: #64748b;
+            display: grid;
+            place-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .role-btn.active .role-icon-box {
+            background-color: #059669;
+            color: #ffffff;
+        }
+
+        .input-group-text-custom {
+            background-color: #ffffff;
+            border-right: none;
+            color: #94a3b8;
+        }
+
+        .form-control-custom {
+            border-left: none;
+            padding-left: 0;
+        }
+
+        .form-control-custom:focus {
+            border-color: #cbd5e1;
+            box-shadow: none;
+        }
+
+        .input-group-focused {
+            border-color: #059669 !important;
+            box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.5) !important;
+        }
+
+        .input-group-custom {
+            border: 1px solid #cbd5e1;
+            border-radius: 0.375rem;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .divider-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            color: #94a3b8;
+            font-size: 0.75rem;
+        }
+
+        .divider-line {
+            flex-grow: 1;
+            height: 1px;
+            background-color: #e2e8f0;
+        }
+
+        .social-btn {
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            font-weight: 500;
+            font-size: 0.875rem;
+            padding: 0.625rem;
+            border-radius: 0.375rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .social-btn:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .btn-emerald {
+            background-color: #047857;
+            color: #ffffff;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-emerald:hover {
+            background-color: #065f46;
+            color: #ffffff;
+        }
+
+        .alert-amber {
+            background-color: #fef3c7; /* amber-100 */
+            border-color: #fde68a; /* amber-200 */
+            color: #78350f; /* amber-900 */
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        /* Custom sliding auth tab toggle */
+        .auth-toggle-wrapper {
+            position: relative;
+            display: flex;
+            background-color: #f1f5f9; /* bg-slate-100 */
+            padding: 4px;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            z-index: 1;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .auth-toggle-slider {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            bottom: 4px;
+            width: calc(50% - 4px);
+            background-color: #ffffff;
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+            z-index: 0;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .auth-toggle-slider.active-right {
+            transform: translateX(100%);
+        }
+
+        .auth-toggle-tab {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem 0;
+            color: #64748b; /* text-slate-500 */
+            text-decoration: none;
+            z-index: 2;
+            transition: color 0.25s ease;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-weight: 500;
+        }
+
+        .auth-toggle-tab:hover {
+            color: #0f172a;
+        }
+
+        .auth-toggle-tab.active {
+            color: #047857 !important; /* emerald-700 */
+            font-weight: 600;
+        }
+
+        /* Fluid Slide + Cross-Fade Container */
+        .auth-slider-container {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            transition: height 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .auth-slider-wrapper {
+            display: flex;
+            width: 200%;
+            transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .auth-slide {
+            width: 50%;
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity 0.35s ease, transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            transform: scale(0.97);
+        }
+
+        .auth-slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body>
+    @await Html.PartialAsync("_Toast")
+
+    <div class="container-fluid p-0">
+        <div class="row g-0 auth-container">
+            <!-- Left Banner (lg+ screens) -->
+            <div class="col-lg-6 d-none d-lg-flex left-banner">
+                <!-- SVG Court Lines -->
+                @await Html.PartialAsync("_CourtLines")
+                <div class="left-banner-gradient"></div>
+
+                <div class="left-banner-content">
+                    <div>
+                        <a asp-controller="Home" asp-action="Index" class="logo-box">
+                            <div class="logo-icon-auth">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 19l9-9" /><circle cx="16" cy="7" r="3" /><path d="M3 21l4-1 1-3" />
+                                </svg>
+                            </div>
+                            CourtBook
+                        </a>
+                    </div>
+                    <div>
+                        <h2 class="display-6 fw-normal mb-3" style="line-height: 1.25;">
+                            Đặt sân cầu lông trong vài chạm.<br />Quản lý cụm sân gọn gàng mỗi ngày.
+                        </h2>
+                        <p class="text-white-50 fs-6 mb-4" style="max-width: 460px;">
+                            Hơn 12.000 người chơi và 180 chủ sân đang dùng CourtBook để kết nối nhanh hơn, minh bạch hơn — không còn cảnh gọi điện hỏi sân trống.
+                        </p>
+                        <div class="row g-3" style="max-width: 460px;">
+                            <div class="col-4">
+                                <div class="stat-card">
+                                    <div class="fs-5 fw-semibold">12k+</div>
+                                    <div class="text-white-50" style="font-size: 0.75rem;">Người chơi</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-card">
+                                    <div class="fs-5 fw-semibold">180+</div>
+                                    <div class="text-white-50" style="font-size: 0.75rem;">Cụm sân</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-card">
+                                    <div class="fs-5 fw-semibold">4.7★</div>
+                                    <div class="text-white-50" style="font-size: 0.75rem;">Đánh giá</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-white-50" style="font-size: 0.75rem;">
+                        © 2026 CourtBook Platform
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Form -->
+            <div class="col-lg-6 right-form-container">
+                <div class="auth-card">
+                    <!-- Role Selector -->
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <button type="button" class="role-btn @(Model.Role == "player" ? "active" : "")" onclick="selectRole('player')">
+                                <div class="role-icon-box">
+                                    <i data-lucide="users" style="width: 1rem; height: 1rem;"></i>
+                                </div>
+                                <div class="leading-tight">
+                                    <div class="fw-semibold text-slate-900" style="font-size: 0.875rem;">Người chơi</div>
+                                    <div class="text-slate-500" style="font-size: 0.75rem;">Tìm & đặt sân</div>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="role-btn @(Model.Role == "owner" ? "active" : "")" onclick="selectRole('owner')">
+                                <div class="role-icon-box">
+                                    <i data-lucide="store" style="width: 1rem; height: 1rem;"></i>
+                                </div>
+                                <div class="leading-tight">
+                                    <div class="fw-semibold text-slate-900" style="font-size: 0.875rem;">Chủ sân</div>
+                                    <div class="text-slate-500" style="font-size: 0.75rem;">Quản lý cụm sân</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Custom sliding tab toggle -->
+                    <div class="auth-toggle-wrapper mb-4">
+                        <div class="auth-toggle-slider active-right"></div>
+                        <a href="#" class="auth-toggle-tab" onclick="handleAuthTabSwitch(event, 'login')">Đăng nhập</a>
+                        <a href="#" class="auth-toggle-tab active" onclick="handleAuthTabSwitch(event, 'register')">Đăng ký</a>
+                    </div>
+
+                    <!-- Slider Container -->
+                    <div class="auth-slider-container">
+                        <div class="auth-slider-wrapper" style="transform: translateX(-50%);">
+                            
+                            <!-- Slide 1: Login Form (Inactive by default on Register page) -->
+                            <div class="auth-slide" id="login-slide">
+                                <div class="mb-4">
+                                    <h3 class="fw-bold text-slate-900 mb-1">Đăng nhập CourtBook</h3>
+                                    <p class="text-slate-500" style="font-size: 0.875rem;">Tiếp tục đặt sân hoặc quản lý cụm sân của bạn.</p>
+                                </div>
+
+                                <form action="/Account/Login" method="post" class="needs-validation">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="Role" class="role-input" value="@Model.Role" />
+
+                                    <!-- Email/Phone Field -->
+                                    <div class="mb-3">
+                                        <label class="form-label text-slate-600 fw-medium" style="font-size: 0.875rem;">Email hoặc số điện thoại</label>
+                                        <div class="input-group input-group-custom" id="email-group">
+                                            <span class="input-group-text input-group-text-custom">
+                                                <i data-lucide="mail" style="width: 1rem; height: 1rem;"></i>
+                                            </span>
+                                            <input type="text" name="EmailOrPhone" class="form-control form-control-custom" placeholder="ban@example.com hoặc SĐT" onfocus="focusGroup('email-group')" onblur="blurGroup('email-group')" required />
+                                        </div>
+                                    </div>
+
+                                    <!-- Password Field -->
+                                    <div class="mb-3">
+                                        <label class="form-label text-slate-600 fw-medium" style="font-size: 0.875rem;">Mật khẩu</label>
+                                        <div class="input-group input-group-custom" id="password-group">
+                                            <span class="input-group-text input-group-text-custom">
+                                                <i data-lucide="lock" style="width: 1rem; height: 1rem;"></i>
+                                            </span>
+                                            <input type="password" id="password-input" name="Password" class="form-control form-control-custom" placeholder="••••••••" onfocus="focusGroup('password-group')" onblur="blurGroup('password-group')" required />
+                                            <button type="button" class="btn bg-white border-0 py-0 px-3 text-slate-400" onclick="togglePassword('password-input', 'password-eye-icon')">
+                                                <i data-lucide="eye" id="password-eye-icon" style="width: 1rem; height: 1rem;"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Remember Me & Forgot Password -->
+                                    <div class="d-flex align-items-center justify-content-between mb-4" style="font-size: 0.875rem;">
+                                        <div class="form-check p-0 d-flex align-items-center gap-2">
+                                            <input class="form-check-input m-0 float-none cursor-pointer" type="checkbox" name="RememberMe" id="remember-me" value="true" style="border-radius: 0.25rem;" checked />
+                                            <label class="form-check-label text-slate-600 cursor-pointer" for="remember-me">Ghi nhớ đăng nhập</label>
+                                        </div>
+                                        <button type="button" class="btn btn-link p-0 text-emerald-700 fw-medium text-decoration-none" style="font-size: 0.875rem;">Quên mật khẩu?</button>
+                                    </div>
+
+                                    <!-- Submit Button -->
+                                    <button type="submit" class="btn btn-emerald w-100 py-2 mb-3">Đăng nhập</button>
+
+                                    <!-- Divider -->
+                                    <div class="divider-container">
+                                        <div class="divider-line"></div>
+                                        hoặc tiếp tục với
+                                        <div class="divider-line"></div>
+                                    </div>
+
+                                    <!-- Social Logins -->
+                                    <div class="row g-2 mb-4">
+                                        <div class="col-6">
+                                            <button type="button" class="social-btn">
+                                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                                    <path fill="#4285F4" d="M22.5 12.3c0-.7-.1-1.4-.2-2H12v3.8h5.9c-.3 1.4-1.1 2.6-2.3 3.4v2.8h3.7c2.2-2 3.4-5 3.4-8z" />
+                                                    <path fill="#34A853" d="M12 23c3.1 0 5.7-1 7.6-2.8l-3.7-2.8c-1 .7-2.3 1.1-3.9 1.1-3 0-5.5-2-6.4-4.7H1.7v2.9C3.6 20.5 7.5 23 12 23z" />
+                                                    <path fill="#FBBC05" d="M5.6 13.8c-.2-.7-.4-1.4-.4-2.3s.1-1.6.4-2.3V6.3H1.7C.9 7.9.5 9.9.5 12c0 2.1.5 4.1 1.3 5.7l3.8-2.9z" />
+                                                    <path fill="#EA4335" d="M12 5c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.7 1.5 15.1.5 12 .5 7.5.5 3.6 3 1.7 6.3l3.8 2.9C6.5 7 9 5 12 5z" />
+                                                </svg>
+                                                Google
+                                            </button>
+                                        </div>
+                                        <div class="col-6">
+                                            <button type="button" class="social-btn">
+                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="#1877F2">
+                                                    <path d="M24 12a12 12 0 10-13.9 11.9v-8.4H7v-3.5h3.1V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9v2.3h3.4l-.5 3.5h-2.9v8.4A12 12 0 0024 12z" />
+                                                </svg>
+                                                Facebook
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <p class="text-center text-slate-600 mb-0" style="font-size: 0.875rem;">
+                                        Chưa có tài khoản?
+                                        <a asp-action="Register" asp-route-role="@Model.Role" class="text-emerald-700 fw-semibold text-decoration-none auth-footer-link" onclick="handleAuthTabSwitch(event, 'register')">Đăng ký mới</a>
+                                    </p>
+                                </form>
+                            </div>
+
+                            <!-- Slide 2: Register Form (Active by default on Register page) -->
+                            <div class="auth-slide active" id="register-slide">
+                                <div class="mb-4">
+                                    <h3 class="fw-bold text-slate-900 mb-1">Tạo tài khoản mới</h3>
+                                    <p class="text-slate-500" style="font-size: 0.875rem;">Chọn vai trò phù hợp để bắt đầu trong vài bước.</p>
+                                </div>
+
+                                <form asp-action="Register" method="post" class="needs-validation">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" asp-for="Role" class="role-input" id="RoleInput" />
+
+                                    <!-- Full Name Field -->
+                                    <div class="mb-3">
+                                        <label class="form-label text-slate-600 fw-medium" style="font-size: 0.875rem;" asp-for="FullName"></label>
+                                        <div class="input-group input-group-custom" id="reg-fullname-group">
+                                            <span class="input-group-text input-group-text-custom">
+                                                <i data-lucide="user" style="width: 1rem; height: 1rem;"></i>
+                                            </span>
+                                            <input type="text" asp-for="FullName" class="form-control form-control-custom" placeholder="Nguyễn Văn A" onfocus="focusGroup('reg-fullname-group')" onblur="blurGroup('reg-fullname-group')" required />
+                                        </div>
+                                        <span asp-validation-for="FullName" class="text-danger" style="font-size: 0.75rem;"></span>
+                                    </div>
+
+                                    <!-- Email & Phone Fields (Two columns) -->
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-sm-6">
+                                            <label class="form-label text-slate-600 fw-medium" style="font-size: 0.875rem;" asp-for="Email"></label>
+                                            <div class="input-group input-group-custom" id="reg-email-group">
+                                                <span class="input-group-text input-group-text-custom">
+                                                    <i data-lucide="mail" style="width: 1rem; height: 1rem;"></i>
+                                                </span>
+                                                <input type="email" asp-for="Email" class="form-control form-control-custom" placeholder="ban@email.com" onfocus="focusGroup('reg-email-group')" onblur="blurGroup('reg-email-group')" required />
+                                            </div>
+                                            <span asp-validation-for="Email" class="text-danger" style="font-size: 0.75rem;"></span>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="form-label text-slate-600 fw-medium" style="font-size: 0.875rem;" asp-for="Phone"></label>
+                                            <div class="input-group input-group-custom" id="reg-phone-group">
+                                                <span class="input-group-text input-group-text-custom">
+                                                    <i data-lucide="phone" style="width: 1rem; height: 1rem;"></i>
+                                                </span>
+                                                <input type="text" asp-for="Phone" class="form-control form-control-custom" placeholder="09xx xxx xxx" onfocus="focusGroup('reg-phone-group')" onblur="blurGroup('reg-phone-group')" required />
+                                            </div>
+                                            <span asp-validation-for="Phone" class="text-danger" style="font-size: 0.75rem;"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Password Field -->
+                                    <div class="mb-3">
+                                        <label class="form-label text-slate-600 fw-medium" style="font-size: 0.875rem;" asp-for="Password"></label>
+                                        <div class="input-group input-group-custom" id="reg-password-group">
+                                            <span class="input-group-text input-group-text-custom">
+                                                <i data-lucide="lock" style="width: 1rem; height: 1rem;"></i>
+                                            </span>
+                                            <input type="password" id="reg-password-input" asp-for="Password" class="form-control form-control-custom" placeholder="Ít nhất 8 ký tự" onfocus="focusGroup('reg-password-group')" onblur="blurGroup('reg-password-group')" required />
+                                            <button type="button" class="btn bg-white border-0 py-0 px-3 text-slate-400" onclick="togglePassword('reg-password-input', 'reg-password-eye-icon')">
+                                                <i data-lucide="eye" id="reg-password-eye-icon" style="width: 1rem; height: 1rem;"></i>
+                                            </button>
+                                        </div>
+                                        <span asp-validation-for="Password" class="text-danger" style="font-size: 0.75rem;"></span>
+                                    </div>
+
+                                    <!-- Owner Warning Alert -->
+                                    <div id="owner-warning-alert" class="alert-amber mb-3" style="display: @(Model.Role == "owner" ? "block" : "none");">
+                                        <div class="d-flex gap-2">
+                                            <i data-lucide="alert-circle" style="width: 1rem; height: 1rem; flex-shrink: 0; color: #b45309;"></i>
+                                            <span>Tài khoản chủ sân cần được admin duyệt trước khi đăng cụm sân. Quá trình thường mất 1-2 ngày làm việc.</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Terms and Conditions Checkbox -->
+                                    <div class="form-check p-0 d-flex gap-2 mb-4" style="font-size: 0.875rem;">
+                                        <input class="form-check-input m-0 float-none cursor-pointer flex-shrink-0" type="checkbox" id="reg-terms" style="border-radius: 0.25rem; margin-top: 2px !important;" required />
+                                        <label class="form-check-label text-slate-600 cursor-pointer" for="reg-terms" style="line-height: 1.35;">
+                                            Tôi đồng ý với <a href="#" class="text-emerald-700 fw-semibold text-decoration-none">Điều khoản dịch vụ</a> và <a href="#" class="text-emerald-700 fw-semibold text-decoration-none">Chính sách bảo mật</a>.
+                                        </label>
+                                    </div>
+
+                                    <!-- Submit Button -->
+                                    <button type="submit" class="btn btn-emerald w-100 py-2 mb-3" id="register-submit-btn">
+                                        @(Model.Role == "owner" ? "Đăng ký chủ sân" : "Tạo tài khoản")
+                                    </button>
+
+                                    <!-- Divider -->
+                                    <div class="divider-container">
+                                        <div class="divider-line"></div>
+                                        hoặc tiếp tục với
+                                        <div class="divider-line"></div>
+                                    </div>
+
+                                    <!-- Social Logins -->
+                                    <div class="row g-2 mb-4">
+                                        <div class="col-6">
+                                            <button type="button" class="social-btn">
+                                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                                    <path fill="#4285F4" d="M22.5 12.3c0-.7-.1-1.4-.2-2H12v3.8h5.9c-.3 1.4-1.1 2.6-2.3 3.4v2.8h3.7c2.2-2 3.4-5 3.4-8z" />
+                                                    <path fill="#34A853" d="M12 23c3.1 0 5.7-1 7.6-2.8l-3.7-2.8c-1 .7-2.3 1.1-3.9 1.1-3 0-5.5-2-6.4-4.7H1.7v2.9C3.6 20.5 7.5 23 12 23z" />
+                                                    <path fill="#FBBC05" d="M5.6 13.8c-.2-.7-.4-1.4-.4-2.3s.1-1.6.4-2.3V6.3H1.7C.9 7.9.5 9.9.5 12c0 2.1.5 4.1 1.3 5.7l3.8-2.9z" />
+                                                    <path fill="#EA4335" d="M12 5c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.7 1.5 15.1.5 12 .5 7.5.5 3.6 3 1.7 6.3l3.8 2.9C6.5 7 9 5 12 5z" />
+                                                </svg>
+                                                Google
+                                            </button>
+                                        </div>
+                                        <div class="col-6">
+                                            <button type="button" class="social-btn">
+                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="#1877F2">
+                                                    <path d="M24 12a12 12 0 10-13.9 11.9v-8.4H7v-3.5h3.1V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9v2.3h3.4l-.5 3.5h-2.9v8.4A12 12 0 0024 12z" />
+                                                </svg>
+                                                Facebook
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <p class="text-center text-slate-600 mb-0" style="font-size: 0.875rem;">
+                                        Đã có tài khoản?
+                                        <a asp-action="Login" asp-route-role="@Model.Role" class="text-emerald-700 fw-semibold text-decoration-none auth-footer-link" onclick="handleAuthTabSwitch(event, 'login')">Đăng nhập ngay</a>
+                                    </p>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Javascripts -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        lucide.createIcons();
+
+        function handleAuthTabSwitch(event, target) {
+            if (event) event.preventDefault();
+            
+            const slider = document.querySelector('.auth-toggle-slider');
+            const tabs = document.querySelectorAll('.auth-toggle-tab');
+            const wrapper = document.querySelector('.auth-slider-wrapper');
+            const container = document.querySelector('.auth-slider-container');
+            const loginSlide = document.getElementById('login-slide');
+            const registerSlide = document.getElementById('register-slide');
+            const role = document.getElementById('RoleInput')?.value || 'player';
+            
+            const newUrl = target === 'login' ? `/Account/Login?role=${role}` : `/Account/Register?role=${role}`;
+            window.history.pushState(null, '', newUrl);
+
+            // 1. Khóa chiều cao hiện tại để bắt đầu transition
+            const startHeight = container.offsetHeight;
+            container.style.height = startHeight + 'px';
+
+            // 2. Chuyển đổi trạng thái Slider và Active tab
+            if (target === 'login') {
+                slider.classList.remove('active-right');
+                tabs[1].classList.remove('active');
+                tabs[0].classList.add('active');
+                
+                wrapper.style.transform = 'translateX(0%)';
+                registerSlide.classList.remove('active');
+                loginSlide.classList.add('active');
+            } else {
+                slider.classList.add('active-right');
+                tabs[0].classList.remove('active');
+                tabs[1].classList.add('active');
+                
+                wrapper.style.transform = 'translateX(-50%)';
+                loginSlide.classList.remove('active');
+                registerSlide.classList.add('active');
+            }
+
+            // Force reflow
+            container.offsetHeight;
+
+            // 3. Tính toán chiều cao tự nhiên của phần tử active mới
+            const activeSlide = target === 'login' ? loginSlide : registerSlide;
+            const newHeight = activeSlide.offsetHeight;
+
+            // 4. Thực hiện animation co giãn chiều cao card mượt mà
+            container.style.transition = 'height 0.38s cubic-bezier(0.4, 0, 0.2, 1)';
+            container.style.height = newHeight + 'px';
+
+            // 5. Trả lại chiều cao auto sau khi hoàn thành animation
+            setTimeout(() => {
+                container.style.height = '';
+                container.style.transition = '';
+            }, 380);
+        }
+
+        function selectRole(role) {
+            // Cập nhật giá trị input hidden cho tất cả form trong DOM
+            document.querySelectorAll('.role-input').forEach(input => {
+                input.value = role;
+            });
+
+            // Xóa class active ở cả 2 nút vai trò
+            document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
+
+            // Kích hoạt class active cho nút tương ứng
+            const buttons = document.querySelectorAll('.role-btn');
+            if (role === 'player') {
+                buttons[0].classList.add('active');
+            } else {
+                buttons[1].classList.add('active');
+            }
+
+            // Đồng bộ cảnh báo chủ sân & chữ trên nút submit của trang Đăng ký
+            const warningAlert = document.getElementById('owner-warning-alert');
+            const submitBtn = document.getElementById('register-submit-btn');
+            
+            if (role === 'owner') {
+                if (warningAlert) warningAlert.style.display = 'block';
+                if (submitBtn) submitBtn.innerText = 'Đăng ký chủ sân';
+            } else {
+                if (warningAlert) warningAlert.style.display = 'none';
+                if (submitBtn) submitBtn.innerText = 'Tạo tài khoản';
+            }
+
+            // Đồng bộ tham số role trong các link chuyển hướng chân trang
+            document.querySelectorAll('.auth-footer-link').forEach(link => {
+                try {
+                    let url = new URL(link.href, window.location.origin);
+                    url.searchParams.set('role', role);
+                    link.href = url.pathname + url.search;
+                } catch (e) {}
+            });
+
+            // Đồng bộ chiều cao nếu role thay đổi làm hiển thị cảnh báo (Register form)
+            const activeSlide = document.querySelector('.auth-slide.active');
+            const container = document.querySelector('.auth-slider-container');
+            if (activeSlide && container) {
+                container.style.height = activeSlide.offsetHeight + 'px';
+                setTimeout(() => {
+                    container.style.height = '';
+                }, 100);
+            }
+        }
+
+        // Lắng nghe nút Back/Forward của trình duyệt để chuyển đổi tab mượt mà
+        window.addEventListener('popstate', () => {
+            const path = window.location.pathname.toLowerCase();
+            const urlParams = new URLSearchParams(window.location.search);
+            const role = urlParams.get('role') || 'player';
+            
+            if (role) {
+                // Tắt hiệu ứng transition chiều cao tạm thời để tránh giật khi chuyển nút cứng trình duyệt
+                const container = document.querySelector('.auth-slider-container');
+                if (container) container.style.transition = 'none';
+                
+                selectRole(role);
+            }
+            
+            if (path.includes('register')) {
+                handleAuthTabSwitch(null, 'register');
+            } else {
+                handleAuthTabSwitch(null, 'login');
+            }
+        });
+
+        // Thiết lập tự động điền thông tin demo trải nghiệm nhanh
+        document.addEventListener("DOMContentLoaded", function() {
+            const role = document.getElementById('RoleInput')?.value || 'player';
+            const emailInput = document.querySelector('#login-slide input[type="text"]');
+            const passInput = document.getElementById('password-input');
+            
+            if (emailInput && emailInput.value === '') {
+                emailInput.value = role === 'owner' ? 'owner@courtbook.vn' : 'player@courtbook.vn';
+            }
+            if (passInput && passInput.value === '') {
+                passInput.value = 'demo1234';
+            }
+
+            // Tính toán lại chiều cao container lần đầu để tránh nhấp nháy
+            const container = document.querySelector('.auth-slider-container');
+            const activeSlide = document.querySelector('.auth-slide.active');
+            if (container && activeSlide) {
+                container.style.height = activeSlide.offsetHeight + 'px';
+                setTimeout(() => {
+                    container.style.height = '';
+                }, 150);
+            }
+        });
+
+        function focusGroup(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('input-group-focused');
+        }
+
+        function blurGroup(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('input-group-focused');
+        }
+
+        function togglePassword(inputId, iconId) {
+            const passInput = document.getElementById(inputId);
+            const eyeIcon = document.getElementById(iconId);
+            if (!passInput || !eyeIcon) return;
+            
+            const isText = passInput.type === 'text';
+            passInput.type = isText ? 'password' : 'text';
+            eyeIcon.setAttribute('data-lucide', isText ? 'eye' : 'eye-off');
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

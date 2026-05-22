@@ -140,9 +140,9 @@ p {
    4. LAYOUT
    ────────────────────────────────────────────── */
 .container {
-    max-width: 1280px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: 1720px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     padding-left: 1.5rem;
     padding-right: 1.5rem;
 }
@@ -581,14 +581,20 @@ p {
 }
 
 .header-inner {
-    max-width: 1280px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: 1720px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     padding: 0 1.5rem;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
 }
 
 .logo {
@@ -632,6 +638,9 @@ p {
     transition: color var(--cb-transition),
                 background-color var(--cb-transition);
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
 }
 
 .nav-link:hover {
@@ -822,7 +831,7 @@ p {
     pointer-events: auto;
 }
 
-.modal {
+.cb-modal {
     background-color: #ffffff;
     border-radius: var(--cb-radius-xl);
     max-width: 480px;
@@ -834,23 +843,23 @@ p {
     transition: transform 200ms ease;
 }
 
-.modal-overlay.active .modal {
+.modal-overlay.active .cb-modal {
     transform: scale(1);
 }
 
-.modal-title {
+.cb-modal-title {
     font-size: 1.125rem;
     font-weight: 600;
     margin-bottom: 1rem;
 }
 
-.modal-body {
+.cb-modal-body {
     font-size: 0.9375rem;
     color: var(--cb-text-secondary);
     line-height: 1.6;
 }
 
-.modal-footer {
+.cb-modal-footer {
     display: flex;
     gap: 0.75rem;
     justify-content: flex-end;
@@ -924,7 +933,7 @@ p {
 /* ──────────────────────────────────────────────
    16. PROGRESS BAR
    ────────────────────────────────────────────── */
-.progress-bar {
+.cb-progress-bar {
     height: 0.5rem;
     background-color: var(--cb-border-light);
     border-radius: 9999px;

@@ -1,0 +1,331 @@
+@model BadmintonCourtBooking.Models.ProfileViewModel
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+}
+
+<style>
+    .profile-avatar-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: #d1fae5; /* emerald-100 */
+        color: #065f46; /* emerald-800 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        border: 2px solid #a7f3d0;
+    }
+
+    .card-profile {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+    }
+
+    .form-label-custom {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #475569;
+        margin-bottom: 0.375rem;
+    }
+
+    .input-group-profile {
+        border: 1px solid #cbd5e1;
+        border-radius: 0.375rem;
+        overflow: hidden;
+        transition: all 0.2s ease;
+    }
+
+    .input-group-profile:focus-within {
+        border-color: #059669;
+        box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.5);
+    }
+
+    .input-group-text-profile {
+        background-color: #ffffff;
+        border-right: none;
+        color: #94a3b8;
+    }
+
+    .form-control-profile {
+        border: none;
+        padding-left: 0;
+    }
+
+    .form-control-profile:focus {
+        box-shadow: none;
+        background-color: transparent;
+    }
+
+    .btn-emerald-profile {
+        background-color: #047857;
+        color: #ffffff;
+        font-weight: 500;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-emerald-profile:hover {
+        background-color: #065f46;
+        color: #ffffff;
+    }
+
+    .btn-outline-profile {
+        background-color: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #475569;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-outline-profile:hover {
+        background-color: #f8fafc;
+        color: #1e293b;
+    }
+
+    .switch-custom .form-check-input {
+        width: 2.5rem;
+        height: 1.25rem;
+        cursor: pointer;
+    }
+
+    .switch-custom .form-check-input:checked {
+        background-color: #059669;
+        border-color: #059669;
+    }
+</style>
+
+<main class="container py-5" style="max-width: 1024px; margin-top: 5rem;">
+    <div class="mb-4">
+        <h2 class="fw-bold text-slate-900 mb-1">Hồ sơ cá nhân</h2>
+        <p class="text-slate-500" style="font-size: 0.875rem;">Cập nhật thông tin và tùy chỉnh cấu hình tài khoản của bạn.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Cột trái: Thẻ tóm tắt thành viên -->
+        <div class="col-lg-4 col-md-5">
+            <div class="card-profile text-center d-flex flex-column align-items-center">
+                <!-- Avatar -->
+                <div class="profile-avatar-circle mb-3">
+                    @{
+                        var initials = "";
+                        try
+                        {
+                            var parts = Model.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                            if (parts.Length > 1) {
+                                initials = (parts[parts.Length - 2][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
+                            } else if (parts.Length == 1) {
+                                initials = parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpper();
+                            } else {
+                                initials = "MK";
+                            }
+                        }
+                        catch {
+                            initials = "MK";
+                        }
+                    }
+                    @initials
+                </div>
+
+                <h5 class="fw-bold text-slate-900 mb-1">@Model.FullName</h5>
+                <p class="text-slate-400 mb-3" style="font-size: 0.75rem;">Thành viên từ @Model.JoinedDate</p>
+
+                @if (Model.IsPhoneVerified)
+                {
+                    <div class="d-inline-flex align-items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-1 rounded mb-4" style="font-size: 0.75rem; font-weight: 500;">
+                        <i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem;"></i> Đã xác minh số điện thoại
+                    </div>
+                }
+
+                <button class="btn btn-outline-profile w-full btn-sm mb-4">Đổi ảnh đại diện</button>
+
+                <hr class="w-full my-3" style="color: #e2e8f0; opacity: 1;" />
+
+                <!-- Thống kê -->
+                <div class="w-full text-start mb-4" style="font-size: 0.875rem;">
+                    <div class="d-flex justify-content-between py-2 border-bottom border-light">
+                        <span class="text-slate-500">Số lượt đặt</span>
+                        <span class="fw-semibold text-slate-900">@Model.BookingCount</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom border-light">
+                        <span class="text-slate-500">Cụm sân yêu thích</span>
+                        <span class="fw-semibold text-slate-900">@Model.FavoriteVenuesCount</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2">
+                        <span class="text-slate-500">Tỉ lệ đến sân</span>
+                        <span class="fw-semibold text-emerald-700">@Model.ShowUpRate%</span>
+                    </div>
+                </div>
+
+                <hr class="w-full my-3" style="color: #e2e8f0; opacity: 1;" />
+
+                <!-- Đăng xuất -->
+                <a asp-action="Logout" class="btn btn-link text-danger w-full text-decoration-none d-flex align-items-center justify-content-center gap-2 py-2" style="font-size: 0.875rem; font-weight: 500;">
+                    <i data-lucide="log-out" style="width: 1rem; height: 1rem;"></i> Đăng xuất tài khoản
+                </a>
+            </div>
+        </div>
+
+        <!-- Cột phải: Các panel biểu mẫu -->
+        <div class="col-lg-8 col-md-7 d-flex flex-column gap-4">
+            <!-- Thông tin cá nhân -->
+            <div class="card-profile">
+                <h5 class="fw-bold text-slate-900 mb-4 d-flex align-items-center gap-2">
+                    <i data-lucide="user" style="width: 1.25rem; height: 1.25rem; color: #64748b;"></i> Thông tin cá nhân
+                </h5>
+                <form asp-action="UpdateProfile" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label form-label-custom" asp-for="FullName"></label>
+                            <div class="input-group input-group-profile">
+                                <span class="input-group-text input-group-text-profile">
+                                    <i data-lucide="user" style="width: 1rem; height: 1rem;"></i>
+                                </span>
+                                <input type="text" asp-for="FullName" class="form-control form-control-profile" required />
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label form-label-custom" asp-for="Phone"></label>
+                            <div class="input-group input-group-profile">
+                                <span class="input-group-text input-group-text-profile">
+                                    <i data-lucide="phone" style="width: 1rem; height: 1rem;"></i>
+                                </span>
+                                <input type="text" asp-for="Phone" class="form-control form-control-profile" required />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label form-label-custom" asp-for="Email"></label>
+                            <div class="input-group input-group-profile">
+                                <span class="input-group-text input-group-text-profile">
+                                    <i data-lucide="mail" style="width: 1rem; height: 1rem;"></i>
+                                </span>
+                                <input type="email" asp-for="Email" class="form-control form-control-profile" required />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label form-label-custom" asp-for="PlayArea"></label>
+                            <div class="input-group input-group-profile">
+                                <span class="input-group-text input-group-text-profile">
+                                    <i data-lucide="map-pin" style="width: 1rem; height: 1rem;"></i>
+                                </span>
+                                <input type="text" asp-for="PlayArea" class="form-control form-control-profile" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="reset" class="btn btn-outline-profile">Hủy bỏ</button>
+                        <button type="submit" class="btn btn-emerald-profile">Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Bảo mật (Đổi mật khẩu) -->
+            <div class="card-profile">
+                <h5 class="fw-bold text-slate-900 mb-4 d-flex align-items-center gap-2">
+                    <i data-lucide="key-round" style="width: 1.25rem; height: 1.25rem; color: #64748b;"></i> Bảo mật tài khoản
+                </h5>
+                <form asp-action="ChangePassword" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label form-label-custom">Mật khẩu hiện tại</label>
+                            <div class="input-group input-group-profile">
+                                <span class="input-group-text input-group-text-profile">
+                                    <i data-lucide="lock" style="width: 1rem; height: 1rem;"></i>
+                                </span>
+                                <input type="password" name="currentPassword" class="form-control form-control-profile" placeholder="••••••••" required />
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label form-label-custom">Mật khẩu mới</label>
+                            <div class="input-group input-group-profile">
+                                <span class="input-group-text input-group-text-profile">
+                                    <i data-lucide="lock" style="width: 1rem; height: 1rem;"></i>
+                                </span>
+                                <input type="password" name="newPassword" class="form-control form-control-profile" placeholder="Tối thiểu 8 ký tự" required />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="submit" class="btn btn-outline-profile">Đổi mật khẩu</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tùy chọn thông báo -->
+            <div class="card-profile">
+                <h5 class="fw-bold text-slate-900 mb-1 d-flex align-items-center gap-2">
+                    <i data-lucide="bell" style="width: 1.25rem; height: 1.25rem; color: #64748b;"></i> Cấu hình nhận thông báo
+                </h5>
+                <p class="text-slate-400 mb-4" style="font-size: 0.75rem;">Chọn loại thông tin bạn muốn cập nhật tự động.</p>
+                
+                <div class="d-flex flex-column gap-3">
+                    <!-- Switch 1 -->
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom border-light">
+                        <div>
+                            <div class="fw-medium text-slate-900" style="font-size: 0.875rem;">Xác nhận lịch đặt sân</div>
+                            <div class="text-slate-500" style="font-size: 0.75rem;">Nhận thông báo khi chủ sân phê duyệt hoặc từ chối lịch đặt.</div>
+                        </div>
+                        <div class="form-check form-switch switch-custom p-0 m-0">
+                            <input class="form-check-input m-0" type="checkbox" role="switch" id="notif-confirm" @(Model.ReceiveBookingConfirm ? "checked" : "") onchange="toggleNotification()" />
+                        </div>
+                    </div>
+
+                    <!-- Switch 2 -->
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom border-light">
+                        <div>
+                            <div class="fw-medium text-slate-900" style="font-size: 0.875rem;">Nhắc nhở lịch chơi</div>
+                            <div class="text-slate-500" style="font-size: 0.75rem;">Gửi cảnh báo trước 1 giờ khi sắp đến giờ đặt sân cầu lông.</div>
+                        </div>
+                        <div class="form-check form-switch switch-custom p-0 m-0">
+                            <input class="form-check-input m-0" type="checkbox" role="switch" id="notif-reminder" @(Model.ReceivePlayReminder ? "checked" : "") onchange="toggleNotification()" />
+                        </div>
+                    </div>
+
+                    <!-- Switch 3 -->
+                    <div class="d-flex align-items-center justify-content-between py-2">
+                        <div>
+                            <div class="fw-medium text-slate-900" style="font-size: 0.875rem;">Ưu đãi & tin tức cụm sân mới</div>
+                            <div class="text-slate-500" style="font-size: 0.75rem;">Các voucher giảm giá đặt sân hấp dẫn (tối đa 2 email/tuần).</div>
+                        </div>
+                        <div class="form-check form-switch switch-custom p-0 m-0">
+                            <input class="form-check-input m-0" type="checkbox" role="switch" id="notif-promo" @(Model.ReceivePromo ? "checked" : "") onchange="toggleNotification()" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        function toggleNotification() {
+            const receiveConfirm = document.getElementById('notif-confirm').checked;
+            const receiveReminder = document.getElementById('notif-reminder').checked;
+            const receivePromo = document.getElementById('notif-promo').checked;
+
+            fetch(`/Account/UpdateNotifications?receiveConfirm=${receiveConfirm}&receiveReminder=${receiveReminder}&receivePromo=${receivePromo}`, {
+                method: 'POST'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                }
+            })
+            .catch(err => {
+                showToast('Không thể cập nhật cấu hình thông báo.', 'error');
+            });
+        }
+    </script>
+}

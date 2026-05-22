@@ -3,7 +3,7 @@
     ViewData["Title"] = "Chủ sân Dashboard - CourtBook";
 }
 
-<main class="container" style="padding-top: 1.5rem; padding-bottom: 4rem;">
+<div class="container" style="padding-top: 1.5rem; padding-bottom: 4rem;">
     <div class="owner-layout">
         <!-- Sidebar Navigation -->
         <aside class="owner-sidebar">
@@ -42,7 +42,7 @@
             </div>
 
             <!-- Stats Row -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+            <div class="owner-stats-grid">
                 <!-- Stat Card 1: Bookings -->
                 <div class="card stat-card" style="border-color: var(--cb-border); background-color: white;">
                     <div class="flex-between">
@@ -101,7 +101,7 @@
             </div>
 
             <!-- Charts & Allocation Grid -->
-            <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 1.5rem;" class="grid-layout-desktop">
+            <div class="owner-charts-grid">
                 <!-- Bar Chart Panel -->
                 <div class="card" style="padding: 1.5rem; border-color: var(--cb-border); background-color: white;">
                     <div class="flex-between" style="margin-bottom: 1.25rem;">
@@ -123,7 +123,7 @@
                                 <span class="text-secondary">Đã đặt</span>
                                 <span class="font-semibold text-slate-900">18 slots (78%)</span>
                             </div>
-                            <div class="progress-bar">
+                            <div class="cb-progress-bar">
                                 <div class="progress-fill progress-emerald" style="width: 78%"></div>
                             </div>
                         </div>
@@ -134,7 +134,7 @@
                                 <span class="text-secondary">Chờ duyệt</span>
                                 <span class="font-semibold text-slate-900">4 slots (17%)</span>
                             </div>
-                            <div class="progress-bar">
+                            <div class="cb-progress-bar">
                                 <div class="progress-fill progress-amber" style="width: 17%"></div>
                             </div>
                         </div>
@@ -145,7 +145,7 @@
                                 <span class="text-secondary">Còn trống</span>
                                 <span class="font-semibold text-slate-900">1 slot (5%)</span>
                             </div>
-                            <div class="progress-bar">
+                            <div class="cb-progress-bar">
                                 <div class="progress-fill progress-slate" style="width: 5%"></div>
                             </div>
                         </div>
@@ -213,7 +213,7 @@
             </div>
         </section>
     </div>
-</main>
+</div>
 
 @section Scripts {
     <!-- Render Chart data helper -->

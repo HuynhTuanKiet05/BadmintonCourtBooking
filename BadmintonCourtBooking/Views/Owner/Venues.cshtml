@@ -6,7 +6,7 @@
     var selectedVenue = Model.FirstOrDefault() ?? new BadmintonCourtBooking.Models.Venue();
 }
 
-<main class="container" style="padding-top: 1.5rem; padding-bottom: 4rem;">
+<div class="container" style="padding-top: 1.5rem; padding-bottom: 4rem;">
     <div class="owner-layout">
         <!-- Sidebar Navigation -->
         <aside class="owner-sidebar">
@@ -173,12 +173,12 @@
             </div>
         </section>
     </div>
-</main>
+</div>
 
 <!-- Add Venue Modal -->
 <div class="modal-overlay" id="add-venue-modal">
-    <div class="modal animate-slideUp">
-        <h3 class="modal-title flex items-center gap-2" style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
+    <div class="cb-modal animate-slideUp">
+        <h3 class="cb-modal-title flex items-center gap-2" style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
             <i data-lucide="plus-circle" style="width:20px;height:20px;color:var(--cb-primary)"></i> Thêm cụm sân mới
         </h3>
         
@@ -207,7 +207,7 @@
             </div>
         </div>
 
-        <div class="modal-footer" style="margin-top: 1.5rem;">
+        <div class="cb-modal-footer" style="margin-top: 1.5rem;">
             <button class="btn btn-outline" onclick="closeModal('add-venue-modal')">Hủy bỏ</button>
             <button class="btn btn-primary" id="submit-new-venue-btn">Tạo cụm sân</button>
         </div>
@@ -216,8 +216,8 @@
 
 <!-- Add Court Modal -->
 <div class="modal-overlay" id="add-court-modal">
-    <div class="modal animate-slideUp" style="max-width: 420px;">
-        <h3 class="modal-title flex items-center gap-2" style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
+    <div class="cb-modal animate-slideUp" style="max-width: 420px;">
+        <h3 class="cb-modal-title flex items-center gap-2" style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
             <i data-lucide="plus-circle" style="width:20px;height:20px;color:var(--cb-primary)"></i> Thêm sân con mới
         </h3>
         
@@ -236,7 +236,7 @@
             </div>
         </div>
 
-        <div class="modal-footer" style="margin-top: 1.5rem;">
+        <div class="cb-modal-footer" style="margin-top: 1.5rem;">
             <button class="btn btn-outline" onclick="closeModal('add-court-modal')">Hủy bỏ</button>
             <button class="btn btn-primary" id="submit-new-court-btn">Thêm sân con</button>
         </div>

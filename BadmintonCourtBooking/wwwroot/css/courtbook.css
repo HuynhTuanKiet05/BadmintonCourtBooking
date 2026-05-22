@@ -25,10 +25,12 @@
 .hero-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 3rem;
+    gap: 4rem;
     align-items: center;
     position: relative;
     z-index: 2;
+    max-width: 1720px !important;
+    margin: 0 auto;
 }
 
 .hero-badge {
@@ -278,8 +280,10 @@
 .owner-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 3rem;
+    gap: 4rem;
     align-items: center;
+    max-width: 1720px !important;
+    margin: 0 auto;
 }
 
 .owner-features {
@@ -1196,11 +1200,54 @@
     display: grid;
     grid-template-columns: 220px 1fr;
     gap: 1.5rem;
-    max-width: 1280px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: 1720px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     padding: 2rem 1.5rem;
     align-items: start;
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .owner-layout {
+        grid-template-columns: 200px 1fr;
+        gap: 1.25rem;
+        padding: 1.5rem 1rem;
+    }
+}
+
+/* Owner Stats Grid */
+.owner-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+    .owner-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .owner-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Owner Charts Grid */
+.owner-charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 991px) {
+    .owner-charts-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
 }
 
 /* ── Owner Sidebar ─── */
@@ -1407,14 +1454,41 @@
     color: var(--cb-text);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 991px) {
     .owner-layout {
         grid-template-columns: 1fr;
         padding: 1.5rem 1rem;
+        gap: 1rem;
     }
 
     .owner-sidebar {
+        position: static;
+        width: 100%;
+    }
+
+    .owner-sidebar .card {
+        position: static !important;
+        padding: 0.375rem !important;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        white-space: nowrap;
+        gap: 0.5rem;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .sidebar-nav::-webkit-scrollbar {
         display: none;
+    }
+
+    .sidebar-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8125rem;
+        flex-shrink: 0;
     }
 
     .chart-container {
@@ -1432,6 +1506,13 @@
     grid-template-columns: 300px 1fr;
     gap: 1.5rem;
     align-items: start;
+}
+
+@media (max-width: 1200px) {
+    .venues-manage-layout {
+        grid-template-columns: 240px 1fr;
+        gap: 1rem;
+    }
 }
 
 /* Venue List Cards */
@@ -1534,13 +1615,15 @@
     color: var(--cb-text);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 991px) {
     .venues-manage-layout {
         grid-template-columns: 1fr;
+        gap: 1.25rem;
     }
 
     .form-grid-2 {
         grid-template-columns: 1fr;
+        gap: 0.75rem;
     }
 }
 
@@ -1550,9 +1633,9 @@
    ══════════════════════════════════════════════ */
 
 .admin-page {
-    max-width: 1280px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: 1720px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     padding: 2rem 1.5rem;
 }
 
