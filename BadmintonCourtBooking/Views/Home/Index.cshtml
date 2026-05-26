@@ -1,6 +1,7 @@
 @model List<BadmintonCourtBooking.Models.Venue>
 @{
     ViewData["Title"] = "Trang chủ - CourtBook";
+    var heroVenue = Model.FirstOrDefault();
 }
 
 <!-- Hero Section -->
@@ -41,12 +42,12 @@
             <div class="card hero-card" style="z-index: 2;">
                 <div class="flex-between">
                     <div>
-                        <div class="font-semibold text-slate-900" style="font-size:1.125rem">Sân Cầu Lông Phú Thọ</div>
+                        <div class="font-semibold text-slate-900" style="font-size:1.125rem">@(heroVenue?.Name ?? "Sân Cầu Lông Phú Thọ")</div>
                         <div class="text-xs text-muted flex items-center gap-1 mt-1">
-                            <i data-lucide="map-pin" style="width:12px;height:12px"></i> Quận 11, TP.HCM
+                            <i data-lucide="map-pin" style="width:12px;height:12px"></i> @(heroVenue is null ? "Quận 11, TP.HCM" : $"{heroVenue.District}, TP.HCM")
                         </div>
                     </div>
-                    <span class="badge badge-emerald">Còn 4 slot</span>
+                    <span class="badge badge-emerald">@(heroVenue?.HasSlotsToday == true ? "Còn slot hôm nay" : "Nổi bật tuần này")</span>
                 </div>
                 <div class="text-xs text-muted" style="margin-top: 1rem;">Hôm nay · Thứ 4, 20/05/2026</div>
                 <div style="margin-top: 0.75rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
@@ -58,9 +59,16 @@
                 <div class="flex-between" style="margin-top: 1.25rem; border-top: 1px dashed var(--cb-border); padding-top: 1rem;">
                     <div>
                         <div class="text-xs text-muted">Sân VIP · 18:00 – 19:00</div>
-                        <div class="font-bold" style="color:var(--cb-primary); font-size:1.125rem">150.000₫</div>
+                        <div class="font-bold" style="color:var(--cb-primary); font-size:1.125rem">@(heroVenue is null ? "150.000₫" : BadmintonCourtBooking.Models.MockData.FormatVND(heroVenue.PriceFrom))</div>
                     </div>
-                    <a asp-controller="Venue" asp-action="Detail" asp-route-id="v1" class="btn btn-primary">Đặt sân</a>
+                    @if (heroVenue is null)
+                    {
+                        <a asp-controller="Venue" asp-action="Index" class="btn btn-primary">Đặt sân</a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Venue" asp-action="Detail" asp-route-id="@heroVenue.Id" class="btn btn-primary">Đặt sân</a>
+                    }
                 </div>
             </div>
         </div>

@@ -1,172 +1,289 @@
+using System.Security.Claims;
+using BadmintonCourtBooking.Data.Entities;
+using BadmintonCourtBooking.Extensions;
 using BadmintonCourtBooking.Models;
+using BadmintonCourtBooking.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BadmintonCourtBooking.Controllers
 {
     public class AccountController : Controller
     {
-        // GET: Account/Login
-        [HttpGet]
-        public IActionResult Login(string role = "player")
+        private readonly IAccountService _accountService;
+        private readonly ICurrentUserService _currentUserService;
+
+        public AccountController(IAccountService accountService, ICurrentUserService currentUserService)
         {
-            if (Request.Cookies.ContainsKey("Auth_User"))
+            _accountService = accountService;
+            _currentUserService = currentUserService;
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Login(string role = "player", string? returnUrl = null, bool locked = false)
+        {
+            if (User.Identity?.IsAuthenticated == true)
             {
-                var currentRole = Request.Cookies["Auth_Role"] ?? "player";
-                return RedirectToAction(currentRole == "owner" ? "Dashboard" : "Index", currentRole == "owner" ? "Owner" : "Home");
+                return RedirectAfterAuthentication(returnUrl);
             }
 
-            var model = new LoginViewModel { Role = role };
+            if (locked)
+            {
+                TempData["ToastMessage"] = "Tài khoản của bạn đang bị khóa. Vui lòng liên hệ quản trị viên CourtBook.";
+                TempData["ToastType"] = "error";
+            }
+
+            var model = new LoginViewModel
+            {
+                Role = role,
+                ReturnUrl = returnUrl
+            };
             return View(model);
         }
 
-        // POST: Account/Login
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public IActionResult Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
-                TempData["ToastMessage"] = "Vui lòng kiểm tra lại thông tin đăng nhập.";
+                TempData["ToastMessage"] = ModelState.GetFirstErrorMessage("Vui lòng kiểm tra lại thông tin đăng nhập.");
                 TempData["ToastType"] = "error";
                 return View(model);
             }
 
-            // Giả lập xác thực thành công
-            Response.Cookies.Append("Auth_User", "true");
-            Response.Cookies.Append("Auth_Role", model.Role);
-            Response.Cookies.Append("Auth_Name", model.Role == "owner" ? "Chủ sân CourtBook" : "Nguyễn Minh Khoa");
-
-            TempData["ToastMessage"] = "Đăng nhập thành công. Chào mừng trở lại!";
-            TempData["ToastType"] = "success";
-
-            if (model.Role == "owner")
+            var result = await _accountService.LoginAsync(model, cancellationToken);
+            if (!result.Succeeded || result.Data is null)
             {
-                return RedirectToAction("Dashboard", "Owner");
-            }
-            return RedirectToAction("Index", "Home");
-        }
-
-        // GET: Account/Register
-        [HttpGet]
-        public IActionResult Register(string role = "player")
-        {
-            if (Request.Cookies.ContainsKey("Auth_User"))
-            {
-                var currentRole = Request.Cookies["Auth_Role"] ?? "player";
-                return RedirectToAction(currentRole == "owner" ? "Dashboard" : "Index", currentRole == "owner" ? "Owner" : "Home");
-            }
-
-            var model = new RegisterViewModel { Role = role };
-            return View(model);
-        }
-
-        // POST: Account/Register
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Register(RegisterViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                TempData["ToastMessage"] = "Vui lòng điền đầy đủ các thông tin cần thiết.";
+                ModelState.AddModelError(string.Empty, result.Message);
+                TempData["ToastMessage"] = result.Message;
                 TempData["ToastType"] = "error";
                 return View(model);
             }
 
-            // Giả lập tạo tài khoản thành công
-            Response.Cookies.Append("Auth_User", "true");
-            Response.Cookies.Append("Auth_Role", model.Role);
-            Response.Cookies.Append("Auth_Name", model.FullName);
+            await SignInAsync(result.Data, model.RememberMe);
 
-            if (model.Role == "owner")
-            {
-                TempData["ToastMessage"] = "Đã tạo tài khoản chủ sân. Hãy đăng ký cụm sân đầu tiên!";
-                TempData["ToastType"] = "success";
-                return RedirectToAction("Venues", "Owner");
-            }
-            
-            TempData["ToastMessage"] = "Tạo tài khoản thành công! Chào mừng bạn đến với CourtBook.";
+            TempData["ToastMessage"] = result.Message;
             TempData["ToastType"] = "success";
-            return RedirectToAction("Index", "Home");
+            return RedirectAfterAuthentication(model.ReturnUrl, result.Data.Role);
         }
 
-        // GET: Account/Profile
         [HttpGet]
-        public IActionResult Profile()
+        [AllowAnonymous]
+        public IActionResult Register(string role = "player", string? returnUrl = null)
         {
-            // Trả về dữ liệu profile giả lập, lấy từ cookies nếu có
-            var model = new ProfileViewModel();
-            if (Request.Cookies.ContainsKey("Auth_Name"))
+            if (User.Identity?.IsAuthenticated == true)
             {
-                model.FullName = Request.Cookies["Auth_Name"] ?? "Nguyễn Minh Khoa";
+                return RedirectAfterAuthentication(returnUrl);
             }
-            
+
+            var model = new RegisterViewModel
+            {
+                Role = role,
+                ReturnUrl = returnUrl
+            };
             return View(model);
         }
 
-        // POST: Account/UpdateProfile
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public IActionResult UpdateProfile(ProfileViewModel model)
+        public async Task<IActionResult> Register(RegisterViewModel model, CancellationToken cancellationToken)
         {
-            // Chỉ kiểm tra các trường cơ bản liên quan đến thông tin cá nhân
-            if (string.IsNullOrEmpty(model.FullName) || string.IsNullOrEmpty(model.Phone) || string.IsNullOrEmpty(model.Email))
+            if (!ModelState.IsValid)
             {
-                TempData["ToastMessage"] = "Vui lòng nhập đầy đủ Họ tên, Số điện thoại và Email.";
+                TempData["ToastMessage"] = ModelState.GetFirstErrorMessage("Vui lòng điền đầy đủ các thông tin cần thiết.");
+                TempData["ToastType"] = "error";
+                return View(model);
+            }
+
+            var result = await _accountService.RegisterAsync(model, cancellationToken);
+            if (!result.Succeeded || result.Data is null)
+            {
+                ModelState.AddModelError(string.Empty, result.Message);
+                TempData["ToastMessage"] = result.Message;
+                TempData["ToastType"] = "error";
+                return View(model);
+            }
+
+            await SignInAsync(result.Data, true);
+
+            TempData["ToastMessage"] = result.Message;
+            TempData["ToastType"] = "success";
+            return RedirectAfterAuthentication(model.ReturnUrl, result.Data.Role);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Profile(CancellationToken cancellationToken)
+        {
+            var currentUser = _currentUserService.User;
+            if (currentUser is null)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            var model = await _accountService.GetProfileAsync(currentUser.UserId, cancellationToken);
+            if (model is null)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(ProfileViewModel model, CancellationToken cancellationToken)
+        {
+            var currentUser = _currentUserService.User;
+            if (currentUser is null)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            if (!ModelState.IsValid)
+            {
+                await PopulateProfileMetadataAsync(currentUser.UserId, model, cancellationToken);
+                TempData["ToastMessage"] = ModelState.GetFirstErrorMessage("Vui lòng nhập đầy đủ và đúng định dạng các thông tin cá nhân.");
                 TempData["ToastType"] = "error";
                 return View("Profile", model);
             }
 
-            // Cập nhật Cookie tên hiển thị
-            Response.Cookies.Append("Auth_Name", model.FullName);
+            var result = await _accountService.UpdateProfileAsync(currentUser.UserId, model, cancellationToken);
+            if (!result.Succeeded || result.Data is null)
+            {
+                await PopulateProfileMetadataAsync(currentUser.UserId, model, cancellationToken);
+                TempData["ToastMessage"] = result.Message;
+                TempData["ToastType"] = "error";
+                return View("Profile", model);
+            }
 
-            TempData["ToastMessage"] = "Đã cập nhật hồ sơ cá nhân thành công.";
+            await SignInAsync(result.Data, true);
+
+            TempData["ToastMessage"] = result.Message;
             TempData["ToastType"] = "success";
             return RedirectToAction(nameof(Profile));
         }
 
-        // POST: Account/ChangePassword
         [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
-        public IActionResult ChangePassword(string currentPassword, string newPassword)
+        public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(currentPassword) || string.IsNullOrEmpty(newPassword))
+            var currentUser = _currentUserService.User;
+            if (currentUser is null)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
             {
                 TempData["ToastMessage"] = "Vui lòng điền đầy đủ thông tin mật khẩu.";
                 TempData["ToastType"] = "error";
                 return RedirectToAction(nameof(Profile));
             }
 
-            if (newPassword.Length < 8)
-            {
-                TempData["ToastMessage"] = "Mật khẩu mới phải có ít nhất 8 ký tự.";
-                TempData["ToastType"] = "error";
-                return RedirectToAction(nameof(Profile));
-            }
-
-            TempData["ToastMessage"] = "Đã thay đổi mật khẩu tài khoản thành công.";
-            TempData["ToastType"] = "success";
+            var result = await _accountService.ChangePasswordAsync(currentUser.UserId, currentPassword, newPassword, cancellationToken);
+            TempData["ToastMessage"] = result.Message;
+            TempData["ToastType"] = result.Succeeded ? "success" : "error";
             return RedirectToAction(nameof(Profile));
         }
 
-        // POST: Account/UpdateNotifications
         [HttpPost]
-        public IActionResult UpdateNotifications(bool receiveConfirm, bool receiveReminder, bool receivePromo)
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateNotifications(bool receiveConfirm, bool receiveReminder, bool receivePromo, CancellationToken cancellationToken)
         {
-            // Trả về JSON để phục vụ việc bật tắt switch qua Ajax
-            return Json(new { success = true, message = "Đã cập nhật tùy chọn nhận thông báo." });
+            var currentUser = _currentUserService.User;
+            if (currentUser is null)
+            {
+                return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn." });
+            }
+
+            var result = await _accountService.UpdateNotificationsAsync(currentUser.UserId, receiveConfirm, receiveReminder, receivePromo, cancellationToken);
+            return Json(new { success = result.Succeeded, message = result.Message });
         }
 
-        // GET: Account/Logout
-        [HttpGet]
-        public IActionResult Logout()
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
         {
-            Response.Cookies.Delete("Auth_User");
-            Response.Cookies.Delete("Auth_Role");
-            Response.Cookies.Delete("Auth_Name");
-
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             TempData["ToastMessage"] = "Đã đăng xuất tài khoản thành công.";
             TempData["ToastType"] = "success";
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
+        private async Task SignInAsync(AppUserEntity user, bool rememberMe)
+        {
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, user.Id),
+                new(ClaimTypes.Name, user.FullName),
+                new(ClaimTypes.Email, user.Email),
+                new(ClaimTypes.MobilePhone, user.PhoneNumber),
+                new(ClaimTypes.Role, user.Role)
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = rememberMe,
+                    ExpiresUtc = rememberMe ? DateTimeOffset.UtcNow.AddDays(14) : null
+                });
+        }
+
+        private IActionResult RedirectAfterAuthentication(string? returnUrl, string? role = null)
+        {
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return LocalRedirect(returnUrl);
+            }
+
+            var resolvedRole = role ?? _currentUserService.User?.Role;
+            return resolvedRole switch
+            {
+                AppRoles.Owner => RedirectToAction("Dashboard", "Owner"),
+                AppRoles.Admin => RedirectToAction("Index", "Admin"),
+                _ => RedirectToAction("Index", "Home")
+            };
+        }
+
+        private async Task PopulateProfileMetadataAsync(string userId, ProfileViewModel model, CancellationToken cancellationToken)
+        {
+            var profile = await _accountService.GetProfileAsync(userId, cancellationToken);
+            if (profile is null)
+            {
+                return;
+            }
+
+            model.BookingCount = profile.BookingCount;
+            model.FavoriteVenuesCount = profile.FavoriteVenuesCount;
+            model.ShowUpRate = profile.ShowUpRate;
+            model.JoinedDate = profile.JoinedDate;
+            model.IsPhoneVerified = profile.IsPhoneVerified;
+            model.ReceiveBookingConfirm = profile.ReceiveBookingConfirm;
+            model.ReceivePlayReminder = profile.ReceivePlayReminder;
+            model.ReceivePromo = profile.ReceivePromo;
         }
     }
 }

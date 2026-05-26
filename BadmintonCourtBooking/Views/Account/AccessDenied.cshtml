@@ -1,0 +1,19 @@
+@{
+    ViewData["Title"] = "Không có quyền truy cập";
+}
+
+<main class="container py-5" style="max-width: 720px; margin-top: 5rem;">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5 text-center">
+            <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" style="width:72px; height:72px; background:#fef2f2; color:#b91c1c;">
+                <i data-lucide="shield-x" style="width:32px; height:32px;"></i>
+            </div>
+            <h1 class="h3 fw-bold mb-2">Bạn không có quyền vào trang này</h1>
+            <p class="text-muted mb-4">Tài khoản hiện tại không phù hợp với vai trò được yêu cầu cho chức năng này.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Về trang chủ</a>
+                <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-secondary">Xem hồ sơ</a>
+            </div>
+        </div>
+    </div>
+</main>

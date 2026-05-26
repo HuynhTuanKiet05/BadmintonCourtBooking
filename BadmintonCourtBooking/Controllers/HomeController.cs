@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using BadmintonCourtBooking.Models;
+using BadmintonCourtBooking.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BadmintonCourtBooking.Controllers
@@ -7,15 +8,17 @@ namespace BadmintonCourtBooking.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IVenueCatalogService _venueCatalogService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IVenueCatalogService venueCatalogService)
         {
             _logger = logger;
+            _venueCatalogService = venueCatalogService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var featuredVenues = MockData.Venues.Take(3).ToList();
+            var featuredVenues = await _venueCatalogService.GetFeaturedVenuesAsync();
             return View(featuredVenues);
         }
 

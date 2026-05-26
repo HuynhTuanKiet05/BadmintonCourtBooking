@@ -1,80 +1,124 @@
 using BadmintonCourtBooking.Models;
+using BadmintonCourtBooking.Extensions;
+using BadmintonCourtBooking.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BadmintonCourtBooking.Controllers
 {
+    [Authorize(Roles = AppRoles.Owner)]
     public class OwnerController : Controller
     {
-        public IActionResult Dashboard()
+        private readonly IOwnerDashboardService _ownerDashboardService;
+
+        public OwnerController(IOwnerDashboardService ownerDashboardService)
         {
-            var viewModel = MockData.GetDashboardViewModel();
+            _ownerDashboardService = ownerDashboardService;
+        }
+
+        public async Task<IActionResult> Dashboard(CancellationToken cancellationToken)
+        {
+            var viewModel = await _ownerDashboardService.GetDashboardAsync(cancellationToken);
             return View(viewModel);
         }
 
-        public IActionResult Venues()
+        public async Task<IActionResult> Venues(string? selectedVenueId, CancellationToken cancellationToken)
         {
-            var venues = MockData.Venues;
-            return View(venues);
+            var viewModel = await _ownerDashboardService.GetVenueManagementAsync(selectedVenueId, cancellationToken);
+            return View(viewModel);
         }
 
         [HttpPost]
-        public IActionResult ApproveBooking(string id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateVenue(OwnerVenueInputModel model, CancellationToken cancellationToken)
         {
-            var ownerBooking = MockData.OwnerBookings.FirstOrDefault(ob => ob.Id == id);
-            if (ownerBooking != null)
+            if (!ModelState.IsValid)
             {
-                ownerBooking.Status = BookingStatus.Confirmed;
-                
-                // Also update the corresponding customer booking if exists
-                // ob1 corresponds to Nguyễn Minh Khoa, ob2 Trần Phương Linh, ob3 Lê Quốc Bảo, ob4 Phạm Hồng Nhung, ob5 Đặng Tuấn Anh
-                // Since this is mock data, we match by customer name or court/time
-                var customerBooking = MockData.MyBookings.FirstOrDefault(mb => 
-                    mb.Court == ownerBooking.Court && 
-                    ownerBooking.Time.Contains(mb.Time.Split(" – ")[0]));
-                if (customerBooking != null)
-                {
-                    customerBooking.Status = BookingStatus.Confirmed;
-                }
+                SetToast(ModelState.GetFirstErrorMessage("Vui lòng nhập đầy đủ thông tin cụm sân trước khi gửi duyệt."), "error");
+                return RedirectToVenues(model.SelectedVenueId);
+            }
 
-                TempData["ToastMessage"] = $"Đã duyệt lịch đặt sân thành công cho {ownerBooking.Customer}.";
-                TempData["ToastType"] = "success";
-            }
-            else
+            var result = await _ownerDashboardService.CreateVenueAsync(model, cancellationToken);
+            SetToast(result.Message, result.Succeeded ? "success" : "error");
+            return RedirectToVenues(result.Data ?? model.SelectedVenueId);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateVenue(OwnerVenueInputModel model, CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
             {
-                TempData["ToastMessage"] = "Không tìm thấy thông tin lịch đặt sân.";
-                TempData["ToastType"] = "error";
+                SetToast(ModelState.GetFirstErrorMessage("Thông tin cụm sân chưa hợp lệ. Vui lòng kiểm tra lại."), "error");
+                return RedirectToVenues(model.SelectedVenueId ?? model.Id);
             }
+
+            var result = await _ownerDashboardService.UpdateVenueAsync(model, cancellationToken);
+            SetToast(result.Message, result.Succeeded ? "success" : "error");
+            return RedirectToVenues(result.Data ?? model.SelectedVenueId ?? model.Id);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateCourt(OwnerCourtInputModel model, CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
+            {
+                SetToast(ModelState.GetFirstErrorMessage("Vui lòng kiểm tra lại thông tin sân con trước khi lưu."), "error");
+                return RedirectToVenues(model.SelectedVenueId ?? model.VenueId);
+            }
+
+            var result = await _ownerDashboardService.CreateCourtAsync(model, cancellationToken);
+            SetToast(result.Message, result.Succeeded ? "success" : "error");
+            return RedirectToVenues(result.Data ?? model.SelectedVenueId ?? model.VenueId);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateCourt(OwnerCourtInputModel model, CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
+            {
+                SetToast(ModelState.GetFirstErrorMessage("Thông tin sân con chưa hợp lệ. Vui lòng kiểm tra lại."), "error");
+                return RedirectToVenues(model.SelectedVenueId ?? model.VenueId);
+            }
+
+            var result = await _ownerDashboardService.UpdateCourtAsync(model, cancellationToken);
+            SetToast(result.Message, result.Succeeded ? "success" : "error");
+            return RedirectToVenues(result.Data ?? model.SelectedVenueId ?? model.VenueId);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveBooking(string id, CancellationToken cancellationToken)
+        {
+            var result = await _ownerDashboardService.ApproveBookingAsync(id, cancellationToken);
+            SetToast(result.Message, result.Succeeded ? "success" : "error");
 
             return RedirectToAction(nameof(Dashboard));
         }
 
         [HttpPost]
-        public IActionResult RejectBooking(string id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectBooking(string id, CancellationToken cancellationToken)
         {
-            var ownerBooking = MockData.OwnerBookings.FirstOrDefault(ob => ob.Id == id);
-            if (ownerBooking != null)
-            {
-                ownerBooking.Status = BookingStatus.Cancelled;
-
-                var customerBooking = MockData.MyBookings.FirstOrDefault(mb => 
-                    mb.Court == ownerBooking.Court && 
-                    ownerBooking.Time.Contains(mb.Time.Split(" – ")[0]));
-                if (customerBooking != null)
-                {
-                    customerBooking.Status = BookingStatus.Cancelled;
-                    customerBooking.When = "cancelled";
-                }
-
-                TempData["ToastMessage"] = $"Đã từ chối lịch đặt sân của {ownerBooking.Customer}.";
-                TempData["ToastType"] = "warning";
-            }
-            else
-            {
-                TempData["ToastMessage"] = "Không tìm thấy thông tin lịch đặt sân.";
-                TempData["ToastType"] = "error";
-            }
+            var result = await _ownerDashboardService.RejectBookingAsync(id, cancellationToken);
+            SetToast(result.Message, result.Succeeded ? "warning" : "error");
 
             return RedirectToAction(nameof(Dashboard));
+        }
+
+        private IActionResult RedirectToVenues(string? selectedVenueId)
+        {
+            return string.IsNullOrWhiteSpace(selectedVenueId)
+                ? RedirectToAction(nameof(Venues))
+                : RedirectToAction(nameof(Venues), new { selectedVenueId });
+        }
+
+        private void SetToast(string message, string type)
+        {
+            TempData["ToastMessage"] = message;
+            TempData["ToastType"] = type;
         }
     }
 }

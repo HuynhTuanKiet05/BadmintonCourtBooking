@@ -1,6 +1,13 @@
-@model List<BadmintonCourtBooking.Models.Venue>
+@using System.Linq
+@model BadmintonCourtBooking.Models.VenueIndexViewModel
 @{
     ViewData["Title"] = "Tìm sân cầu lông - CourtBook";
+
+    var filters = Model.Filters;
+    var districtOptions = Model.DistrictOptions
+        .Prepend(BadmintonCourtBooking.Models.VenueSearchCriteria.AllDistricts)
+        .Distinct()
+        .ToList();
 }
 
 <main class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
@@ -8,125 +15,138 @@
     <div style="margin-bottom: 2rem;">
         <h1>Tìm sân cầu lông</h1>
         <p class="text-secondary text-sm" style="margin-top: 0.25rem;">
-            <span id="venue-count">@Model.Count</span> cụm sân phù hợp tại khu vực TP.HCM
+            <span id="venue-count">@Model.Venues.Count</span> cụm sân phù hợp tại khu vực TP.HCM
         </p>
     </div>
 
-    <div class="find-layout">
-        <!-- Sidebar filters -->
-        <aside class="filter-sidebar">
-            <div class="card" style="padding: 1.25rem; border-color: var(--cb-border); background-color: white;">
-                <div class="flex items-center gap-2" style="margin-bottom: 1.25rem;">
-                    <i data-lucide="sliders-horizontal" style="width:16px;height:16px;color:var(--cb-text-secondary)"></i>
-                    <div class="font-semibold text-slate-900">Bộ lọc</div>
+    <form asp-controller="Venue" asp-action="Index" method="get" id="venue-search-form">
+        <div class="find-layout">
+            <!-- Sidebar filters -->
+            <aside class="filter-sidebar">
+                <div class="card" style="padding: 1.25rem; border-color: var(--cb-border); background-color: white;">
+                    <div class="flex items-center gap-2" style="margin-bottom: 1.25rem;">
+                        <i data-lucide="sliders-horizontal" style="width:16px;height:16px;color:var(--cb-text-secondary)"></i>
+                        <div class="font-semibold text-slate-900">Bộ lọc</div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <!-- Districts -->
+                        <div>
+                            <label class="form-label" style="margin-bottom: 0.5rem;">Khu vực</label>
+                            <div class="filter-chips" id="district-filter-group">
+                                <input type="hidden" id="district-input" name="District" value="@filters.District" />
+                                @foreach (var district in districtOptions)
+                                {
+                                    <button type="button"
+                                            data-district="@district"
+                                            class="filter-chip @(filters.District == district ? "active" : "")">
+                                        @district
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Price Slider -->
+                        <div>
+                            <div class="flex-between" style="margin-bottom: 0.5rem;">
+                                <label class="form-label" for="price-range" style="margin-bottom: 0;">Giá tối đa / giờ</label>
+                                <span class="text-xs font-semibold" style="color: var(--cb-primary)" id="price-slider-value">@BadmintonCourtBooking.Models.MockData.FormatVND(filters.MaxPrice)</span>
+                            </div>
+                            <input type="range" class="price-slider" id="price-range" name="MaxPrice" min="50000" max="250000" step="10000" value="@filters.MaxPrice" />
+                            <div class="flex-between text-xs text-muted" style="margin-top: 0.25rem;">
+                                <span>50k</span>
+                                <span>150k</span>
+                                <span>250k</span>
+                            </div>
+                        </div>
+
+                        <!-- Hours Select -->
+                        <div>
+                            <label class="form-label" for="hours-filter">Giờ mở cửa</label>
+                            <select class="form-select" id="hours-filter" name="Hours" style="width: 100%;">
+                                <option value="any" selected="@(filters.Hours == "any")">Bất kỳ</option>
+                                <option value="morning" selected="@(filters.Hours == "morning")">Mở sớm (trước 06:00)</option>
+                                <option value="late" selected="@(filters.Hours == "late")">Mở khuya (sau 22:00)</option>
+                            </select>
+                        </div>
+
+                        <!-- Checkbox Available Today -->
+                        <div>
+                            <label class="flex items-center gap-2" style="cursor: pointer;">
+                                <input type="checkbox"
+                                       class="form-checkbox"
+                                       id="available-today-filter"
+                                       name="OnlyAvailable"
+                                       value="true"
+                                       checked="@filters.OnlyAvailable"
+                                       style="width: 1rem; height: 1rem; cursor: pointer;" />
+                                <span class="text-sm text-secondary" style="user-select: none;">Chỉ hiện sân còn slot hôm nay</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    <!-- Districts -->
-                    <div>
-                        <label class="form-label" style="margin-bottom: 0.5rem;">Khu vực</label>
-                        <div class="filter-chips" id="district-filter-group">
-                            <button class="filter-chip active" data-district="Tất cả">Tất cả</button>
-                            <button class="filter-chip" data-district="Quận 10">Quận 10</button>
-                            <button class="filter-chip" data-district="Quận 11">Quận 11</button>
-                            <button class="filter-chip" data-district="Quận Tân Bình">Tân Bình</button>
-                            <button class="filter-chip" data-district="Quận Bình Thạnh">Bình Thạnh</button>
-                            <button class="filter-chip" data-district="Quận Gò Vấp">Gò Vấp</button>
-                            <button class="filter-chip" data-district="TP. Thủ Đức">Thủ Đức</button>
-                        </div>
+                <!-- Tip card -->
+                <div class="tip-card" style="margin-top: 1rem;">
+                    <div class="text-sm font-semibold" style="color: var(--cb-primary-800); display: flex; align-items: center; gap: 0.25rem;">
+                        <i data-lucide="sparkles" style="width:14px;height:14px"></i> Mẹo nhỏ
+                    </div>
+                    <p class="text-xs" style="color: var(--cb-primary-800); margin-top: 0.25rem; line-height: 1.4;">
+                        Khung giờ vàng 17:00 – 20:00 thường rất nhanh hết sân. Bạn nên đặt trước từ 2 – 3 ngày để chọn được sân đẹp nhất!
+                    </p>
+                </div>
+            </aside>
+
+            <!-- Results section -->
+            <section>
+                <!-- Search & Sort Bar -->
+                <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <div class="relative" style="flex: 1; min-width: 250px;">
+                        <i data-lucide="search" style="width:16px;height:16px; position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--cb-text-muted);"></i>
+                        <input type="text"
+                               class="form-input"
+                               id="search-input"
+                               name="Query"
+                               value="@filters.Query"
+                               autocomplete="off"
+                               placeholder="Tìm theo tên sân hoặc khu vực..."
+                               style="padding-left: 2.25rem;" />
                     </div>
 
-                    <!-- Price Slider -->
-                    <div>
-                        <div class="flex-between" style="margin-bottom: 0.5rem;">
-                            <label class="form-label" style="margin-bottom: 0;">Giá tối đa / giờ</label>
-                            <span class="text-xs font-semibold" style="color: var(--cb-primary)" id="price-slider-value">250.000₫</span>
-                        </div>
-                        <input type="range" class="price-slider" id="price-range" min="50000" max="250000" step="10000" value="250000" />
-                        <div class="flex-between text-xs text-muted" style="margin-top: 0.25rem;">
-                            <span>50k</span>
-                            <span>150k</span>
-                            <span>250k</span>
-                        </div>
-                    </div>
-
-                    <!-- Hours Select -->
-                    <div>
-                        <label class="form-label" for="hours-filter">Giờ mở cửa</label>
-                        <select class="form-select" id="hours-filter" style="width: 100%;">
-                            <option value="any">Bất kỳ</option>
-                            <option value="morning">Mở sớm (trước 06:00)</option>
-                            <option value="late">Mở khuya (sau 22:00)</option>
+                    <div style="min-width: 180px;">
+                        <select class="form-select" id="sort-select" name="Sort">
+                            <option value="relevance" selected="@(filters.Sort == "relevance")">Liên quan nhất</option>
+                            <option value="price-asc" selected="@(filters.Sort == "price-asc")">Giá: Thấp đến Cao</option>
+                            <option value="rating-desc" selected="@(filters.Sort == "rating-desc")">Đánh giá cao nhất</option>
                         </select>
                     </div>
-
-                    <!-- Checkbox Available Today -->
-                    <div>
-                        <label class="flex items-center gap-2" style="cursor: pointer;">
-                            <input type="checkbox" class="form-checkbox" id="available-today-filter" style="width: 1rem; height: 1rem; cursor: pointer;" />
-                            <span class="text-sm text-secondary" style="user-select: none;">Chỉ hiện sân còn slot hôm nay</span>
-                        </label>
-                    </div>
                 </div>
-            </div>
 
-            <!-- Tip card -->
-            <div class="tip-card" style="margin-top: 1rem;">
-                <div class="text-sm font-semibold" style="color: var(--cb-primary-800); display: flex; align-items: center; gap: 0.25rem;">
-                    <i data-lucide="sparkles" style="width:14px;height:14px"></i> Mẹo nhỏ
-                </div>
-                <p class="text-xs" style="color: var(--cb-primary-800); margin-top: 0.25rem; line-height: 1.4;">
-                    Khung giờ vàng 17:00 – 20:00 thường rất nhanh hết sân. Bạn nên đặt trước từ 2 – 3 ngày để chọn được sân đẹp nhất!
-                </p>
-            </div>
-        </aside>
-
-        <!-- Results section -->
-        <section>
-            <!-- Search & Sort Bar -->
-            <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-                <div class="relative" style="flex: 1; min-width: 250px;">
-                    <i data-lucide="search" style="width:16px;height:16px; position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--cb-text-muted);"></i>
-                    <input type="text" class="form-input" id="search-input" placeholder="Tìm theo tên sân hoặc khu vực..." style="padding-left: 2.25rem;" />
-                </div>
-                
-                <div style="min-width: 180px;">
-                    <select class="form-select" id="sort-select">
-                        <option value="relevance">Liên quan nhất</option>
-                        <option value="price-asc">Giá: Thấp đến Cao</option>
-                        <option value="rating-desc">Đánh giá cao nhất</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Empty state -->
-            <div class="card" id="empty-state" style="display: none; padding: 4rem 2rem; text-align: center; border-style: dashed; border-color: var(--cb-border); background-color: white; border-radius: var(--cb-radius-xl);">
-                <div class="flex-center" style="width: 3.5rem; height: 3.5rem; border-radius: 9999px; background-color: var(--cb-section-alt); color: var(--cb-text-muted); margin: 0 auto 1rem;">
-                    <i data-lucide="inbox" style="width:28px;height:28px"></i>
-                </div>
-                <h3 style="font-size: 1.125rem; margin-bottom: 0.25rem;">Không tìm thấy sân phù hợp</h3>
-                <p class="text-sm text-secondary" style="margin-bottom: 1.25rem;">Hãy thử nới lỏng khu vực lọc hoặc tăng giá tối đa lên.</p>
-                <button class="btn btn-outline" id="clear-filters-btn">Xóa bộ lọc</button>
-            </div>
-
-            <!-- Venues grid -->
-            <div class="venue-grid" id="venues-container">
-                @foreach (var venue in Model)
+                @if (Model.Venues.Count == 0)
                 {
-                    <div class="venue-filter-item animate-fadeIn" 
-                         data-id="@venue.Id"
-                         data-name="@venue.Name.ToLower()"
-                         data-district="@venue.District"
-                         data-price="@venue.PriceFrom"
-                         data-slots="@venue.HasSlotsToday.ToString().ToLower()"
-                         data-rating="@venue.Rating"
-                         data-open="@(venue.OpenHours.Contains("05:") ? "morning" : venue.OpenHours.Contains("23:") ? "late" : "normal")">
-                        @await Html.PartialAsync("_VenueCard", venue)
+                    <div class="card" id="empty-state" style="padding: 4rem 2rem; text-align: center; border-style: dashed; border-color: var(--cb-border); background-color: white; border-radius: var(--cb-radius-xl);">
+                        <div class="flex-center" style="width: 3.5rem; height: 3.5rem; border-radius: 9999px; background-color: var(--cb-section-alt); color: var(--cb-text-muted); margin: 0 auto 1rem;">
+                            <i data-lucide="inbox" style="width:28px;height:28px"></i>
+                        </div>
+                        <h3 style="font-size: 1.125rem; margin-bottom: 0.25rem;">Không tìm thấy sân phù hợp</h3>
+                        <p class="text-sm text-secondary" style="margin-bottom: 1.25rem;">Hãy thử nới lỏng khu vực lọc hoặc tăng giá tối đa lên.</p>
+                        <a asp-controller="Venue" asp-action="Index" class="btn btn-outline" id="clear-filters-btn">Xóa bộ lọc</a>
                     </div>
                 }
-            </div>
-        </section>
-    </div>
+                else
+                {
+                    <div class="venue-grid" id="venues-container">
+                        @foreach (var venue in Model.Venues)
+                        {
+                            <div class="venue-filter-item animate-fadeIn">
+                                @await Html.PartialAsync("_VenueCard", venue)
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+        </div>
+    </form>
 </main>
 
 @section Scripts {

@@ -1,32 +1,33 @@
 using BadmintonCourtBooking.Models;
+using BadmintonCourtBooking.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BadmintonCourtBooking.Controllers
 {
+    [Authorize(Roles = AppRoles.Player)]
     public class BookingController : Controller
     {
-        public IActionResult Index()
+        private readonly IBookingService _bookingService;
+
+        public BookingController(IBookingService bookingService)
         {
-            var bookings = MockData.MyBookings;
+            _bookingService = bookingService;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var bookings = await _bookingService.GetPlayerBookingsAsync();
             return View(bookings);
         }
 
         [HttpPost]
-        public IActionResult Cancel(string id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Cancel(string id)
         {
-            var booking = MockData.MyBookings.FirstOrDefault(b => b.Id == id);
-            if (booking != null)
-            {
-                booking.Status = BookingStatus.Cancelled;
-                booking.When = "cancelled";
-                TempData["ToastMessage"] = $"Đã hủy lịch đặt tại {booking.Venue} ({booking.Court}) thành công.";
-                TempData["ToastType"] = "success";
-            }
-            else
-            {
-                TempData["ToastMessage"] = "Không tìm thấy thông tin lịch đặt sân.";
-                TempData["ToastType"] = "error";
-            }
+            var result = await _bookingService.CancelBookingAsync(id);
+            TempData["ToastMessage"] = result.Message;
+            TempData["ToastType"] = result.Succeeded ? "success" : "error";
 
             return RedirectToAction(nameof(Index));
         }

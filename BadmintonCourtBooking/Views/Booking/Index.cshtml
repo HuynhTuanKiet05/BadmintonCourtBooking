@@ -1,3 +1,4 @@
+@using System.Text.Json
 @model List<BadmintonCourtBooking.Models.Booking>
 @{
     ViewData["Title"] = "Lịch của tôi - CourtBook";
@@ -52,7 +53,7 @@
                                     <div class="flex-wrap gap-x-4 gap-y-1 text-xs text-muted" style="display: flex; margin-top: 0.75rem;">
                                         <span class="flex items-center gap-1"><i data-lucide="calendar" style="width:13px;height:13px"></i> @b.Date</span>
                                         <span class="flex items-center gap-1"><i data-lucide="clock" style="width:13px;height:13px"></i> @b.Time</span>
-                                        <span class="flex items-center gap-1"><i data-lucide="map-pin" style="width:13px;height:13px"></i> TP. Hồ Chí Minh</span>
+                                        <span class="flex items-center gap-1"><i data-lucide="map-pin" style="width:13px;height:13px"></i> @(string.IsNullOrWhiteSpace(b.Location) ? "TP. Hồ Chí Minh" : b.Location)</span>
                                     </div>
                                 </div>
 
@@ -62,14 +63,19 @@
                                         <div class="font-bold" style="color: var(--cb-primary); font-size: 1.125rem;">@BadmintonCourtBooking.Models.MockData.FormatVND(b.Total)</div>
                                     </div>
                                     <div style="display: flex; gap: 0.5rem;">
-                                        @if (b.Status != BadmintonCourtBooking.Models.BookingStatus.Cancelled)
+                                        @if (b.CanCancel)
                                         {
                                             <form asp-controller="Booking" asp-action="Cancel" asp-route-id="@b.Id" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy lịch đặt sân này?');">
+                                                @Html.AntiForgeryToken()
                                                 <button type="submit" class="btn btn-destructive btn-sm">Hủy lịch</button>
                                             </form>
                                         }
-                                        <button class="btn btn-outline btn-sm" onclick="showToast('Xem chi tiết đặt lịch ID: @b.Id', 'success')">Chi tiết</button>
+                                        <a asp-controller="Venue" asp-action="Detail" asp-route-id="@b.VenueId" asp-fragment="booking-schedule" class="btn btn-outline btn-sm">Xem sân</a>
                                     </div>
+                                    @if (!b.CanCancel)
+                                    {
+                                        <div class="text-xs text-muted">Chỉ có thể hủy trước giờ chơi ít nhất 1 giờ.</div>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -102,7 +108,7 @@
                                     <div class="flex-wrap gap-x-4 gap-y-1 text-xs text-muted" style="display: flex; margin-top: 0.75rem;">
                                         <span class="flex items-center gap-1"><i data-lucide="calendar" style="width:13px;height:13px"></i> @b.Date</span>
                                         <span class="flex items-center gap-1"><i data-lucide="clock" style="width:13px;height:13px"></i> @b.Time</span>
-                                        <span class="flex items-center gap-1"><i data-lucide="map-pin" style="width:13px;height:13px"></i> TP. Hồ Chí Minh</span>
+                                        <span class="flex items-center gap-1"><i data-lucide="map-pin" style="width:13px;height:13px"></i> @(string.IsNullOrWhiteSpace(b.Location) ? "TP. Hồ Chí Minh" : b.Location)</span>
                                     </div>
                                 </div>
 
@@ -112,8 +118,7 @@
                                         <div class="font-bold text-slate-900" style="font-size: 1.125rem;">@BadmintonCourtBooking.Models.MockData.FormatVND(b.Total)</div>
                                     </div>
                                     <div style="display: flex; gap: 0.5rem;">
-                                        <button class="btn btn-outline btn-sm" onclick="showToast('Phản hồi đánh giá sân ID: @b.Id', 'success')">Đánh giá</button>
-                                        <button class="btn btn-outline btn-sm" onclick="showToast('Xem chi tiết lịch đặt ID: @b.Id', 'success')">Chi tiết</button>
+                                        <a asp-controller="Venue" asp-action="Detail" asp-route-id="@b.VenueId" asp-fragment="booking-schedule" class="btn btn-primary btn-sm">Đặt lại</a>
                                     </div>
                                 </div>
                             </div>
@@ -147,7 +152,7 @@
                                     <div class="flex-wrap gap-x-4 gap-y-1 text-xs text-muted" style="display: flex; margin-top: 0.75rem;">
                                         <span class="flex items-center gap-1"><i data-lucide="calendar" style="width:13px;height:13px"></i> @b.Date</span>
                                         <span class="flex items-center gap-1"><i data-lucide="clock" style="width:13px;height:13px"></i> @b.Time</span>
-                                        <span class="flex items-center gap-1"><i data-lucide="map-pin" style="width:13px;height:13px"></i> TP. Hồ Chí Minh</span>
+                                        <span class="flex items-center gap-1"><i data-lucide="map-pin" style="width:13px;height:13px"></i> @(string.IsNullOrWhiteSpace(b.Location) ? "TP. Hồ Chí Minh" : b.Location)</span>
                                     </div>
                                 </div>
 
@@ -157,8 +162,7 @@
                                         <div class="font-semibold text-secondary" style="font-size: 1.125rem; text-decoration: line-through;">@BadmintonCourtBooking.Models.MockData.FormatVND(b.Total)</div>
                                     </div>
                                     <div style="display: flex; gap: 0.5rem;">
-                                        <a asp-controller="Venue" asp-action="Detail" asp-route-id="v1" class="btn btn-primary btn-sm">Đặt lại</a>
-                                        <button class="btn btn-outline btn-sm" onclick="showToast('Xem chi tiết lịch đặt ID: @b.Id', 'success')">Chi tiết</button>
+                                        <a asp-controller="Venue" asp-action="Detail" asp-route-id="@b.VenueId" asp-fragment="booking-schedule" class="btn btn-primary btn-sm">Đặt lại</a>
                                     </div>
                                 </div>
                             </div>
@@ -179,11 +183,11 @@
             }
             
             // Check for TempData toast alerts
-            @if (TempData["ToastMessage"] != null)
+            @if (TempData["ToastMessage"] is string toastMessage && TempData["ToastType"] is string toastType)
             {
                 <text>
                 if (window.showToast) {
-                    window.showToast("@TempData["ToastMessage"]", "@TempData["ToastType"]", 4000);
+                    window.showToast(@Html.Raw(JsonSerializer.Serialize(toastMessage)), @Html.Raw(JsonSerializer.Serialize(toastType)), 4000);
                 }
                 </text>
             }

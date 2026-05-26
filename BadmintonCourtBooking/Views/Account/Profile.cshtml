@@ -168,9 +168,12 @@
                 <hr class="w-full my-3" style="color: #e2e8f0; opacity: 1;" />
 
                 <!-- Đăng xuất -->
-                <a asp-action="Logout" class="btn btn-link text-danger w-full text-decoration-none d-flex align-items-center justify-content-center gap-2 py-2" style="font-size: 0.875rem; font-weight: 500;">
-                    <i data-lucide="log-out" style="width: 1rem; height: 1rem;"></i> Đăng xuất tài khoản
-                </a>
+                <form asp-action="Logout" method="post" class="w-full">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-link text-danger w-full text-decoration-none d-flex align-items-center justify-content-center gap-2 py-2" style="font-size: 0.875rem; font-weight: 500;">
+                        <i data-lucide="log-out" style="width: 1rem; height: 1rem;"></i> Đăng xuất tài khoản
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -269,6 +272,7 @@
                 <p class="text-slate-400 mb-4" style="font-size: 0.75rem;">Chọn loại thông tin bạn muốn cập nhật tự động.</p>
                 
                 <div class="d-flex flex-column gap-3">
+                    @Html.AntiForgeryToken()
                     <!-- Switch 1 -->
                     <div class="d-flex align-items-center justify-content-between py-2 border-bottom border-light">
                         <div>
@@ -313,9 +317,19 @@
             const receiveConfirm = document.getElementById('notif-confirm').checked;
             const receiveReminder = document.getElementById('notif-reminder').checked;
             const receivePromo = document.getElementById('notif-promo').checked;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
-            fetch(`/Account/UpdateNotifications?receiveConfirm=${receiveConfirm}&receiveReminder=${receiveReminder}&receivePromo=${receivePromo}`, {
-                method: 'POST'
+            fetch('/Account/UpdateNotifications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'RequestVerificationToken': token
+                },
+                body: new URLSearchParams({
+                    receiveConfirm,
+                    receiveReminder,
+                    receivePromo
+                })
             })
             .then(res => res.json())
             .then(data => {

@@ -1,3 +1,4 @@
+@using System.Security.Claims
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -46,20 +47,39 @@
                 <nav class="nav-links md-flex" id="desktop-nav">
                     <a asp-controller="Home" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">Trang chủ</a>
                     <a asp-controller="Venue" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Venue" ? "active" : "")">Tìm sân</a>
-                    <a asp-controller="Booking" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Booking" ? "active" : "")">Lịch của tôi</a>
-                    <a asp-controller="Owner" asp-action="Dashboard" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Owner" ? "active" : "")">Dành cho chủ sân</a>
-                    <a asp-controller="Admin" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" ? "active" : "")">
-                        <i data-lucide="shield" style="width:14px;height:14px"></i> Admin
-                    </a>
+                    @if (User.IsInRole("Player"))
+                    {
+                        <a asp-controller="Booking" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Booking" ? "active" : "")">Lịch của tôi</a>
+                    }
+                    @if (User.IsInRole("Owner"))
+                    {
+                        <a asp-controller="Owner" asp-action="Dashboard" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Owner" ? "active" : "")">Dành cho chủ sân</a>
+                    }
+                    else if (!(User.Identity?.IsAuthenticated ?? false))
+                    {
+                        <a asp-controller="Account" asp-action="Login" asp-route-role="owner" class="nav-link">Dành cho chủ sân</a>
+                    }
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="Admin" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" ? "active" : "")">
+                            <i data-lucide="shield" style="width:14px;height:14px"></i> Admin
+                        </a>
+                    }
                 </nav>
             </div>
 
             <!-- Auth Buttons (desktop) -->
             <div class="auth-buttons md-show">
-                @if (Context.Request.Cookies.ContainsKey("Auth_User"))
+                @if (User.Identity?.IsAuthenticated == true)
                 {
-                    var name = Context.Request.Cookies["Auth_Name"] ?? "Nguyễn Minh Khoa";
-                    var role = Context.Request.Cookies["Auth_Role"] ?? "player";
+                    var name = User.Identity?.Name ?? "Tài khoản CourtBook";
+                    var role = User.FindFirstValue(ClaimTypes.Role) ?? "Player";
+                    var roleLabel = role switch
+                    {
+                        "Owner" => "Chủ cụm sân",
+                        "Admin" => "Quản trị viên",
+                        _ => "Người chơi"
+                    };
                     var initials = "";
                     try
                     {
@@ -82,12 +102,15 @@
                             </div>
                             <div class="text-xs" style="text-align:left; line-height:1.2; margin-left: 8px;">
                                 <div class="font-medium text-slate-900" style="color:#0f172a; font-weight: 500;">@name</div>
-                                <div class="text-slate-500" style="font-size:10px; color:#64748b">@(role == "owner" ? "Chủ cụm sân" : "Người chơi")</div>
+                                <div class="text-slate-500" style="font-size:10px; color:#64748b">@roleLabel</div>
                             </div>
                         </a>
-                        <a asp-controller="Account" asp-action="Logout" class="btn btn-icon btn-ghost" title="Đăng xuất" style="padding:4px; margin-left:8px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
-                            <i data-lucide="log-out" style="width:16px;height:16px;color:#e11d48"></i>
-                        </a>
+                        <form asp-controller="Account" asp-action="Logout" method="post" style="margin:0;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-icon btn-ghost" title="Đăng xuất" style="padding:4px; margin-left:8px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+                                <i data-lucide="log-out" style="width:16px;height:16px;color:#e11d48"></i>
+                            </button>
+                        </form>
                     </div>
                 }
                 else
@@ -115,14 +138,30 @@
         </div>
         <a asp-controller="Home" asp-action="Index" class="nav-link">Trang chủ</a>
         <a asp-controller="Venue" asp-action="Index" class="nav-link">Tìm sân</a>
-        <a asp-controller="Booking" asp-action="Index" class="nav-link">Lịch của tôi</a>
-        <a asp-controller="Owner" asp-action="Dashboard" class="nav-link">Dành cho chủ sân</a>
-        <a asp-controller="Admin" asp-action="Index" class="nav-link">Admin</a>
+        @if (User.IsInRole("Player"))
+        {
+            <a asp-controller="Booking" asp-action="Index" class="nav-link">Lịch của tôi</a>
+        }
+        @if (User.IsInRole("Owner"))
+        {
+            <a asp-controller="Owner" asp-action="Dashboard" class="nav-link">Dành cho chủ sân</a>
+        }
+        else if (!(User.Identity?.IsAuthenticated ?? false))
+        {
+            <a asp-controller="Account" asp-action="Login" asp-route-role="owner" class="nav-link">Dành cho chủ sân</a>
+        }
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-controller="Admin" asp-action="Index" class="nav-link">Admin</a>
+        }
         <div style="border-top:1px solid var(--cb-border);margin:1rem 0"></div>
-        @if (Context.Request.Cookies.ContainsKey("Auth_User"))
+        @if (User.Identity?.IsAuthenticated == true)
         {
             <a asp-controller="Account" asp-action="Profile" class="nav-link" style="padding: 0.5rem 0.75rem; border-radius: 0.375rem; text-decoration: none; display: block;">Hồ sơ cá nhân</a>
-            <a asp-controller="Account" asp-action="Logout" class="nav-link text-danger" style="padding: 0.5rem 0.75rem; border-radius: 0.375rem; color:#e11d48; text-decoration: none; display: block; margin-top: 0.25rem;">Đăng xuất</a>
+            <form asp-controller="Account" asp-action="Logout" method="post" style="margin-top: 0.25rem;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="nav-link text-danger" style="padding: 0.5rem 0.75rem; border-radius: 0.375rem; color:#e11d48; text-decoration: none; display: block; margin-top: 0.25rem; background:none; border:none; width:100%; text-align:left;">Đăng xuất</button>
+            </form>
         }
         else
         {

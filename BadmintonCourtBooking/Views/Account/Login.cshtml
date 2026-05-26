@@ -412,6 +412,8 @@
                         </div>
                     </div>
 
+                    @await Html.PartialAsync("_DemoAccountsPanel")
+
                     <!-- Custom sliding tab toggle -->
                     <div class="auth-toggle-wrapper mb-4">
                         <div class="auth-toggle-slider"></div>
@@ -433,6 +435,9 @@
                                 <form asp-action="Login" method="post" class="needs-validation">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" asp-for="Role" class="role-input" id="RoleInput" />
+                                    <input type="hidden" asp-for="ReturnUrl" />
+
+                                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="font-size: 0.875rem;"></div>
 
                                     <!-- Email/Phone Field -->
                                     <div class="mb-3">
@@ -441,7 +446,7 @@
                                             <span class="input-group-text input-group-text-custom">
                                                 <i data-lucide="mail" style="width: 1rem; height: 1rem;"></i>
                                             </span>
-                                            <input type="text" asp-for="EmailOrPhone" class="form-control form-control-custom" placeholder="ban@example.com hoặc SĐT" onfocus="focusGroup('email-group')" onblur="blurGroup('email-group')" required />
+                                            <input type="text" id="login-email-input" asp-for="EmailOrPhone" class="form-control form-control-custom" placeholder="ban@example.com hoặc SĐT" autocomplete="username" maxlength="160" onfocus="focusGroup('email-group')" onblur="blurGroup('email-group')" required />
                                         </div>
                                         <span asp-validation-for="EmailOrPhone" class="text-danger" style="font-size: 0.75rem;"></span>
                                     </div>
@@ -453,7 +458,7 @@
                                             <span class="input-group-text input-group-text-custom">
                                                 <i data-lucide="lock" style="width: 1rem; height: 1rem;"></i>
                                             </span>
-                                            <input type="password" id="password-input" asp-for="Password" class="form-control form-control-custom" placeholder="••••••••" onfocus="focusGroup('password-group')" onblur="blurGroup('password-group')" required />
+                                            <input type="password" id="password-input" asp-for="Password" class="form-control form-control-custom" placeholder="••••••••" autocomplete="current-password" maxlength="100" onfocus="focusGroup('password-group')" onblur="blurGroup('password-group')" required />
                                             <button type="button" class="btn bg-white border-0 py-0 px-3 text-slate-400" onclick="togglePassword('password-input', 'password-eye-icon')">
                                                 <i data-lucide="eye" id="password-eye-icon" style="width: 1rem; height: 1rem;"></i>
                                             </button>
@@ -505,7 +510,7 @@
 
                                     <p class="text-center text-slate-600 mb-0" style="font-size: 0.875rem;">
                                         Chưa có tài khoản?
-                                        <a asp-action="Register" asp-route-role="@Model.Role" class="text-emerald-700 fw-semibold text-decoration-none auth-footer-link" onclick="handleAuthTabSwitch(event, 'register')">Đăng ký mới</a>
+                                        <a asp-action="Register" asp-route-role="@Model.Role" asp-route-returnUrl="@Model.ReturnUrl" data-auth-target="register" class="text-emerald-700 fw-semibold text-decoration-none auth-footer-link" onclick="handleAuthTabSwitch(event, 'register')">Đăng ký mới</a>
                                     </p>
                                 </form>
                             </div>
@@ -520,6 +525,7 @@
                                 <form action="/Account/Register" method="post" class="needs-validation">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="Role" class="role-input" value="@Model.Role" />
+                                    <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
 
                                     <!-- Full Name Field -->
                                     <div class="mb-3">
@@ -528,7 +534,7 @@
                                             <span class="input-group-text input-group-text-custom">
                                                 <i data-lucide="user" style="width: 1rem; height: 1rem;"></i>
                                             </span>
-                                            <input type="text" name="FullName" class="form-control form-control-custom" placeholder="Nguyễn Văn A" onfocus="focusGroup('reg-fullname-group')" onblur="blurGroup('reg-fullname-group')" required />
+                                            <input type="text" name="FullName" class="form-control form-control-custom" placeholder="Nguyễn Văn A" autocomplete="name" minlength="2" maxlength="120" onfocus="focusGroup('reg-fullname-group')" onblur="blurGroup('reg-fullname-group')" required />
                                         </div>
                                     </div>
 
@@ -540,7 +546,7 @@
                                                 <span class="input-group-text input-group-text-custom">
                                                     <i data-lucide="mail" style="width: 1rem; height: 1rem;"></i>
                                                 </span>
-                                                <input type="email" name="Email" class="form-control form-control-custom" placeholder="ban@email.com" onfocus="focusGroup('reg-email-group')" onblur="blurGroup('reg-email-group')" required />
+                                                <input type="email" name="Email" class="form-control form-control-custom" placeholder="ban@email.com" autocomplete="email" maxlength="160" onfocus="focusGroup('reg-email-group')" onblur="blurGroup('reg-email-group')" required />
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
@@ -549,7 +555,7 @@
                                                 <span class="input-group-text input-group-text-custom">
                                                     <i data-lucide="phone" style="width: 1rem; height: 1rem;"></i>
                                                 </span>
-                                                <input type="text" name="Phone" class="form-control form-control-custom" placeholder="09xx xxx xxx" onfocus="focusGroup('reg-phone-group')" onblur="blurGroup('reg-phone-group')" required />
+                                                <input type="tel" name="Phone" class="form-control form-control-custom" placeholder="09xx xxx xxx" inputmode="tel" maxlength="30" pattern="[0-9+\-\s()]{8,30}" onfocus="focusGroup('reg-phone-group')" onblur="blurGroup('reg-phone-group')" required />
                                             </div>
                                         </div>
                                     </div>
@@ -561,9 +567,22 @@
                                             <span class="input-group-text input-group-text-custom">
                                                 <i data-lucide="lock" style="width: 1rem; height: 1rem;"></i>
                                             </span>
-                                            <input type="password" id="reg-password-input" name="Password" class="form-control form-control-custom" placeholder="Ít nhất 8 ký tự" onfocus="focusGroup('reg-password-group')" onblur="blurGroup('reg-password-group')" required />
+                                            <input type="password" id="reg-password-input" name="Password" class="form-control form-control-custom" placeholder="Ít nhất 8 ký tự" autocomplete="new-password" minlength="8" maxlength="100" onfocus="focusGroup('reg-password-group')" onblur="blurGroup('reg-password-group')" required />
                                             <button type="button" class="btn bg-white border-0 py-0 px-3 text-slate-400" onclick="togglePassword('reg-password-input', 'reg-password-eye-icon')">
                                                 <i data-lucide="eye" id="reg-password-eye-icon" style="width: 1rem; height: 1rem;"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label text-slate-600 fw-medium" style="font-size: 0.875rem;">Xác nhận mật khẩu</label>
+                                        <div class="input-group input-group-custom" id="reg-confirm-password-group">
+                                            <span class="input-group-text input-group-text-custom">
+                                                <i data-lucide="shield-check" style="width: 1rem; height: 1rem;"></i>
+                                            </span>
+                                            <input type="password" id="reg-confirm-password-input" name="ConfirmPassword" class="form-control form-control-custom" placeholder="Nhập lại mật khẩu" autocomplete="new-password" minlength="8" maxlength="100" onfocus="focusGroup('reg-confirm-password-group')" onblur="blurGroup('reg-confirm-password-group')" required />
+                                            <button type="button" class="btn bg-white border-0 py-0 px-3 text-slate-400" onclick="togglePassword('reg-confirm-password-input', 'reg-confirm-password-eye-icon')">
+                                                <i data-lucide="eye" id="reg-confirm-password-eye-icon" style="width: 1rem; height: 1rem;"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -621,7 +640,7 @@
 
                                     <p class="text-center text-slate-600 mb-0" style="font-size: 0.875rem;">
                                         Đã có tài khoản?
-                                        <a asp-action="Login" asp-route-role="@Model.Role" class="text-emerald-700 fw-semibold text-decoration-none auth-footer-link" onclick="handleAuthTabSwitch(event, 'login')">Đăng nhập ngay</a>
+                                        <a asp-action="Login" asp-route-role="@Model.Role" asp-route-returnUrl="@Model.ReturnUrl" data-auth-target="login" class="text-emerald-700 fw-semibold text-decoration-none auth-footer-link" onclick="handleAuthTabSwitch(event, 'login')">Đăng nhập ngay</a>
                                     </p>
                                 </form>
                             </div>
@@ -635,10 +654,94 @@
 
     <!-- Javascripts -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
     <script>
         lucide.createIcons();
 
-        function handleAuthTabSwitch(event, target) {
+        const demoAccountButtons = Array.from(document.querySelectorAll('.demo-account-btn'));
+
+        function getReturnUrlValue() {
+            return document.querySelector('input[name="ReturnUrl"]')?.value
+                || new URLSearchParams(window.location.search).get('returnUrl')
+                || '';
+        }
+
+        function buildAuthUrl(target, role) {
+            const url = new URL(target === 'login' ? '/Account/Login' : '/Account/Register', window.location.origin);
+            url.searchParams.set('role', role);
+
+            const returnUrl = getReturnUrlValue();
+            if (returnUrl) {
+                url.searchParams.set('returnUrl', returnUrl);
+            }
+
+            return url.pathname + url.search;
+        }
+
+        function getLoginEmailInput() {
+            return document.getElementById('login-email-input');
+        }
+
+        function getLoginPasswordInput() {
+            return document.getElementById('password-input');
+        }
+
+        function getDefaultDemoAccount(role) {
+            return demoAccountButtons.find(button => button.dataset.demoRole === role) || null;
+        }
+
+        function isKnownDemoCredentials(email, password) {
+            return demoAccountButtons.some(button =>
+                button.dataset.demoEmail === email && button.dataset.demoPassword === password);
+        }
+
+        function fillLoginCredentials(email, password) {
+            const emailInput = getLoginEmailInput();
+            const passwordInput = getLoginPasswordInput();
+
+            if (emailInput) {
+                emailInput.value = email;
+            }
+
+            if (passwordInput) {
+                passwordInput.value = password;
+            }
+        }
+
+        function syncDefaultDemoCredentials(role, force = false) {
+            const emailInput = getLoginEmailInput();
+            const passwordInput = getLoginPasswordInput();
+            if (!emailInput || !passwordInput) {
+                return;
+            }
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            if (!force && email && password && !isKnownDemoCredentials(email, password)) {
+                return;
+            }
+
+            const defaultAccount = getDefaultDemoAccount(role);
+            if (defaultAccount) {
+                fillLoginCredentials(defaultAccount.dataset.demoEmail || '', defaultAccount.dataset.demoPassword || '');
+            }
+        }
+
+        function bindDemoAccountButtons() {
+            demoAccountButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const demoRole = button.dataset.demoRole;
+                    if (demoRole) {
+                        selectRole(demoRole, { syncDemo: false });
+                    }
+
+                    fillLoginCredentials(button.dataset.demoEmail || '', button.dataset.demoPassword || '');
+                    handleAuthTabSwitch(null, 'login');
+                });
+            });
+        }
+
+        function handleAuthTabSwitch(event, target, updateHistory = true) {
             if (event) event.preventDefault();
             
             const slider = document.querySelector('.auth-toggle-slider');
@@ -649,8 +752,12 @@
             const registerSlide = document.getElementById('register-slide');
             const role = document.getElementById('RoleInput')?.value || 'player';
             
-            const newUrl = target === 'login' ? `/Account/Login?role=${role}` : `/Account/Register?role=${role}`;
-            window.history.pushState(null, '', newUrl);
+            if (updateHistory) {
+                const newUrl = buildAuthUrl(target, role);
+                if (`${window.location.pathname}${window.location.search}` !== newUrl) {
+                    window.history.pushState(null, '', newUrl);
+                }
+            }
 
             // 1. Khóa chiều cao hiện tại để bắt đầu transition
             const startHeight = container.offsetHeight;
@@ -693,7 +800,9 @@
             }, 380);
         }
 
-        function selectRole(role) {
+        function selectRole(role, options = {}) {
+            const { syncDemo = true } = options;
+
             // Cập nhật giá trị input hidden cho tất cả form trong DOM
             document.querySelectorAll('.role-input').forEach(input => {
                 input.value = role;
@@ -725,9 +834,8 @@
             // Đồng bộ tham số role trong các link chuyển hướng chân trang
             document.querySelectorAll('.auth-footer-link').forEach(link => {
                 try {
-                    let url = new URL(link.href, window.location.origin);
-                    url.searchParams.set('role', role);
-                    link.href = url.pathname + url.search;
+                    const target = link.dataset.authTarget || 'login';
+                    link.href = buildAuthUrl(target, role);
                 } catch (e) {}
             });
 
@@ -739,6 +847,17 @@
                 setTimeout(() => {
                     container.style.height = '';
                 }, 100);
+            }
+
+            if (syncDemo) {
+                syncDefaultDemoCredentials(role);
+            }
+
+            const registerSlide = document.getElementById('register-slide');
+            const activeTarget = registerSlide?.classList.contains('active') ? 'register' : 'login';
+            const currentUrl = buildAuthUrl(activeTarget, role);
+            if (`${window.location.pathname}${window.location.search}` !== currentUrl) {
+                window.history.replaceState(null, '', currentUrl);
             }
         }
 
@@ -753,28 +872,21 @@
                 const container = document.querySelector('.auth-slider-container');
                 if (container) container.style.transition = 'none';
                 
-                selectRole(role);
+                selectRole(role, { syncDemo: false });
             }
             
             if (path.includes('register')) {
-                handleAuthTabSwitch(null, 'register');
+                handleAuthTabSwitch(null, 'register', false);
             } else {
-                handleAuthTabSwitch(null, 'login');
+                handleAuthTabSwitch(null, 'login', false);
             }
         });
 
-        // Thiết lập tự động điền thông tin demo trải nghiệm nhanh
         document.addEventListener("DOMContentLoaded", function() {
             const role = document.getElementById('RoleInput')?.value || 'player';
-            const emailInput = document.querySelector('#login-slide input[type="text"]');
-            const passInput = document.getElementById('password-input');
-            
-            if (emailInput && emailInput.value === '') {
-                emailInput.value = role === 'owner' ? 'owner@courtbook.vn' : 'player@courtbook.vn';
-            }
-            if (passInput && passInput.value === '') {
-                passInput.value = 'demo1234';
-            }
+
+            bindDemoAccountButtons();
+            syncDefaultDemoCredentials(role);
 
             // Tính toán lại chiều cao container lần đầu để tránh nhấp nháy
             const container = document.querySelector('.auth-slider-container');

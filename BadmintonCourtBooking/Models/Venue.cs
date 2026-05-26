@@ -7,6 +7,7 @@ public class Venue
     public string District { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
     public string OpenHours { get; set; } = string.Empty;
+    public string OwnerPhone { get; set; } = string.Empty;
     public int PriceFrom { get; set; }
     public List<Court> Courts { get; set; } = new();
     public string? Highlight { get; set; }

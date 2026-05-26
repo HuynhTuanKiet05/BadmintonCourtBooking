@@ -1,14 +1,12 @@
-@model List<BadmintonCourtBooking.Models.Venue>
+@model OwnerVenueManagementViewModel
 @{
     ViewData["Title"] = "Quản lý sân của tôi - CourtBook";
-    
-    // Default selected venue is the first one
-    var selectedVenue = Model.FirstOrDefault() ?? new BadmintonCourtBooking.Models.Venue();
+    var selectedVenue = Model.Venues.FirstOrDefault(venue => venue.Id == Model.SelectedVenueId)
+        ?? Model.Venues.FirstOrDefault();
 }
 
 <div class="container" style="padding-top: 1.5rem; padding-bottom: 4rem;">
     <div class="owner-layout">
-        <!-- Sidebar Navigation -->
         <aside class="owner-sidebar">
             <div class="card" style="padding: 0.5rem; border-color: var(--cb-border); background-color: white; position: sticky; top: 5rem;">
                 <nav class="sidebar-nav">
@@ -18,337 +16,305 @@
                     <a asp-controller="Owner" asp-action="Venues" class="sidebar-link active">
                         <i data-lucide="building-2" style="width:16px;height:16px"></i> Cụm sân của tôi
                     </a>
-                    <a asp-controller="Owner" asp-action="Venues" class="sidebar-link">
+                    <a asp-controller="Owner" asp-action="Venues" class="sidebar-link active">
                         <i data-lucide="layers" style="width:16px;height:16px"></i> Sân con
                     </a>
-                    <a asp-controller="Owner" asp-action="Dashboard" class="sidebar-link">
+                    <a asp-controller="Owner" asp-action="Dashboard" asp-fragment="owner-bookings" class="sidebar-link">
                         <i data-lucide="calendar-days" style="width:16px;height:16px"></i> Booking
                     </a>
-                    <a asp-controller="Owner" asp-action="Dashboard" class="sidebar-link">
+                    <a asp-controller="Account" asp-action="Profile" class="sidebar-link">
                         <i data-lucide="wallet" style="width:16px;height:16px"></i> Hồ sơ chủ sân
                     </a>
                 </nav>
             </div>
         </aside>
 
-        <!-- Main Console -->
         <section style="min-width: 0;">
-            <!-- Header greeting -->
             <div class="flex-between flex-wrap gap-3 mb-5">
                 <div>
-                    <h1 style="font-size: 1.75rem;">Cụm sân của tôi</h1>
-                    <p class="text-secondary text-sm" style="margin-top: 0.25rem;">Quản lý thông tin chi tiết các cụm sân, sân con và đơn giá dịch vụ.</p>
+                    <h1 style="font-size: 1.75rem;">Cụm sân của @Model.OwnerName</h1>
+                    <p class="text-secondary text-sm" style="margin-top: 0.25rem;">Tạo venue mới, cập nhật thông tin đang chờ duyệt và bật hoặc tắt sân con theo dữ liệu thật trong DB.</p>
                 </div>
-                <button class="btn btn-primary" onclick="openModal('add-venue-modal')">
-                    <i data-lucide="plus" style="width:16px;height:16px"></i> Thêm cụm sân
-                </button>
+                <a href="#new-venue-form" class="btn btn-primary">
+                    <i data-lucide="plus" style="width:16px;height:16px"></i> Tạo cụm sân mới
+                </a>
             </div>
 
-            <!-- Venue Management Layout Grid -->
             <div class="venues-manage-layout">
-                <!-- Left: List of owned venues -->
                 <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                    @for (int i = 0; i < Math.Min(Model.Count, 3); i++)
+                    @if (!Model.HasVenues)
                     {
-                        var v = Model[i];
-                        <div class="card venue-list-card @(i == 0 ? "selected" : "")" 
-                             data-venueid="@v.Id"
-                             style="padding: 1rem; cursor: pointer; border-color: var(--cb-border); background-color: white;">
-                            <div class="flex-between">
-                                <div>
-                                    <h3 class="font-semibold text-slate-900" style="font-size: 1rem; margin: 0;">@v.Name</h3>
-                                    <div class="text-xs text-muted flex items-center gap-1 mt-1">
-                                        <i data-lucide="map-pin" style="width:12px;height:12px"></i> @v.District
-                                    </div>
-                                </div>
-                                <span class="badge badge-emerald">Đang mở</span>
-                            </div>
-                            <div class="text-xs text-secondary" style="margin-top: 1rem;">
-                                @v.Courts.Count sân con · từ @BadmintonCourtBooking.Models.MockData.FormatVND(v.PriceFrom)/giờ
-                            </div>
+                        <div class="card" style="padding: 1rem; border: 1px dashed var(--cb-border); background-color: white;">
+                            <div class="font-semibold text-slate-900">Bạn chưa có cụm sân nào</div>
+                            <p class="text-sm text-secondary" style="margin-top: 0.375rem;">Điền form ở bên phải để tạo venue đầu tiên. Sau khi tạo, venue sẽ ở trạng thái chờ quản trị viên duyệt.</p>
                         </div>
                     }
+                    else
+                    {
+                        @foreach (var venue in Model.Venues)
+                        {
+                            var isSelected = selectedVenue?.Id == venue.Id;
+                            <a asp-controller="Owner"
+                               asp-action="Venues"
+                               asp-route-selectedVenueId="@venue.Id"
+                               class="card venue-list-card @(isSelected ? "selected" : string.Empty)"
+                               style="padding: 1rem; border-color: var(--cb-border); background-color: white; text-decoration: none;">
+                                <div class="flex-between">
+                                    <div>
+                                        <h3 class="font-semibold text-slate-900" style="font-size: 1rem; margin: 0;">@venue.Name</h3>
+                                        <div class="text-xs text-muted flex items-center gap-1 mt-1">
+                                            <i data-lucide="map-pin" style="width:12px;height:12px"></i> @venue.District
+                                        </div>
+                                    </div>
+                                    <span class="badge badge-@venue.StatusTone">@venue.StatusLabel</span>
+                                </div>
+                                <div class="text-xs text-secondary" style="margin-top: 1rem;">
+                                    @venue.ActiveCourtCount/@venue.TotalCourtCount sân đang hoạt động · từ @MockData.FormatVND(venue.PriceFrom)/giờ
+                                </div>
+                            </a>
+                        }
+                    }
 
-                    <div class="card" style="padding: 1rem; border-style: dashed; border-color: var(--cb-border); background-color: var(--cb-section-alt); text-align: center; font-size: 0.8125rem; color: var(--cb-text-muted);">
-                        <i data-lucide="shield-alert" style="width:16px;height:16px; display:inline; vertical-align:middle; margin-right:4px; color: var(--cb-primary)"></i>
-                        Bạn còn trống 1 vị trí sân trong gói đăng ký cơ bản.
+                    <div class="card" style="padding: 1rem; border-style: dashed; border-color: var(--cb-border); background-color: var(--cb-section-alt); font-size: 0.8125rem; color: var(--cb-text-muted);">
+                        <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                            <i data-lucide="shield-check" style="width:16px;height:16px; color: var(--cb-primary); margin-top: 2px;"></i>
+                            <div>Dữ liệu trên trang này chỉ lấy theo owner đang đăng nhập. Venue và booking của owner khác sẽ không hiển thị hoặc cập nhật được.</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Right: Editing Forms for active selection -->
                 <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    @foreach (var venue in Model.Take(3))
+                    @if (selectedVenue is not null)
                     {
-                        var isFirst = venue.Id == selectedVenue.Id;
-                        <div class="venue-form-panel" id="venue-form-@venue.Id" style="display: @(isFirst ? "block" : "none");">
-                            <!-- Main Details Form Card -->
-                            <div class="card" style="padding: 1.5rem; border-color: var(--cb-border); background-color: white; margin-bottom: 1.5rem;">
-                                <div class="flex-between" style="margin-bottom: 1.25rem;">
-                                    <h3 style="font-size: 1.125rem; font-weight: 600; margin: 0;">Thông tin chi tiết cụm sân</h3>
-                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                        <span class="text-xs text-muted">Trạng thái hoạt động:</span>
-                                        <input type="checkbox" class="switch" checked style="vertical-align: middle;" />
+                        <div class="card" style="padding: 1.5rem; border-color: var(--cb-border); background-color: white;">
+                            <div class="flex-between flex-wrap gap-3" style="margin-bottom: 1.25rem;">
+                                <div>
+                                    <h3 style="font-size: 1.125rem; font-weight: 600; margin: 0;">Thông tin cụm sân</h3>
+                                    <p class="text-xs text-muted" style="margin-top: 0.25rem;">@selectedVenue.StatusDescription</p>
+                                </div>
+                                <span class="badge badge-@selectedVenue.StatusTone">@selectedVenue.StatusLabel</span>
+                            </div>
+
+                            <form asp-controller="Owner" asp-action="UpdateVenue" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="Id" value="@selectedVenue.Id" />
+                                <input type="hidden" name="SelectedVenueId" value="@selectedVenue.Id" />
+
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <div class="form-grid-2">
+                                        <div class="form-group">
+                                            <label class="form-label" for="venue-name-@selectedVenue.Id">Tên cụm sân</label>
+                                            <input id="venue-name-@selectedVenue.Id" name="Name" type="text" class="form-input" value="@selectedVenue.Name" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="venue-district-@selectedVenue.Id">Khu vực</label>
+                                            <input id="venue-district-@selectedVenue.Id" name="District" type="text" class="form-input" value="@selectedVenue.District" />
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="venue-address-@selectedVenue.Id">Địa chỉ cụ thể</label>
+                                        <input id="venue-address-@selectedVenue.Id" name="Address" type="text" class="form-input" value="@selectedVenue.Address" />
+                                    </div>
+
+                                    <div class="form-grid-2">
+                                        <div class="form-group">
+                                            <label class="form-label" for="venue-open-@selectedVenue.Id">Giờ mở cửa</label>
+                                            <input id="venue-open-@selectedVenue.Id" name="OpenTime" type="text" class="form-input" value="@selectedVenue.OpenTime" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="venue-close-@selectedVenue.Id">Giờ đóng cửa</label>
+                                            <input id="venue-close-@selectedVenue.Id" name="CloseTime" type="text" class="form-input" value="@selectedVenue.CloseTime" />
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="venue-desc-@selectedVenue.Id">Mô tả cụm sân</label>
+                                        <textarea id="venue-desc-@selectedVenue.Id" name="Description" class="form-textarea" rows="4">@selectedVenue.Description</textarea>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
+                                    <a asp-controller="Owner" asp-action="Venues" asp-route-selectedVenueId="@selectedVenue.Id" class="btn btn-outline">Tải lại</a>
+                                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card" style="padding: 1.5rem; border-color: var(--cb-border); background-color: white;">
+                            <div class="flex-between flex-wrap gap-3" style="margin-bottom: 1.25rem;">
+                                <div>
+                                    <h3 style="font-size: 1.125rem; font-weight: 600; margin: 0;">Sân con thuộc @selectedVenue.Name</h3>
+                                    <p class="text-xs text-muted" style="margin-top: 0.25rem;">Bỏ chọn trạng thái hoạt động để xóa mềm sân con. Nếu sân đang có booking sắp tới, hệ thống sẽ chặn thao tác này.</p>
+                                </div>
+                                <span class="badge badge-slate">@selectedVenue.TotalCourtCount sân</span>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                @if (selectedVenue.Courts.Count == 0)
+                                {
+                                    <div style="padding: 1rem; border: 1px dashed var(--cb-border); border-radius: var(--cb-radius); background-color: var(--cb-section-alt); color: var(--cb-text-muted);">
+                                        Venue này chưa có sân con nào. Dùng form bên dưới để tạo sân đầu tiên.
+                                    </div>
+                                }
+                                else
+                                {
+                                    @foreach (var court in selectedVenue.Courts)
+                                    {
+                                        <form asp-controller="Owner" asp-action="UpdateCourt" method="post" style="border: 1px solid var(--cb-border-light); border-radius: var(--cb-radius); padding: 1rem; background-color: var(--cb-section-alt); display: flex; flex-direction: column; gap: 0.875rem;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="Id" value="@court.Id" />
+                                            <input type="hidden" name="VenueId" value="@selectedVenue.Id" />
+                                            <input type="hidden" name="SelectedVenueId" value="@selectedVenue.Id" />
+
+                                            <div class="flex-between flex-wrap gap-3">
+                                                <div class="font-semibold text-slate-900">@court.Name</div>
+                                                <span class="badge badge-@court.AvailabilityTone">@court.AvailabilityLabel</span>
+                                            </div>
+
+                                            <div class="form-grid-2">
+                                                <div class="form-group">
+                                                    <label class="form-label" for="court-name-@court.Id">Tên sân</label>
+                                                    <input id="court-name-@court.Id" name="Name" type="text" class="form-input" value="@court.Name" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-label" for="court-price-@court.Id">Giá thuê mỗi giờ</label>
+                                                    <input id="court-price-@court.Id" name="PricePerHour" type="number" class="form-input" min="50000" step="5000" value="@court.PricePerHour" />
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="form-label" for="court-note-@court.Id">Ghi chú</label>
+                                                <input id="court-note-@court.Id" name="Note" type="text" class="form-input" value="@court.Note" placeholder="Ví dụ: Sân VIP, sàn mới, gần quầy nước..." />
+                                            </div>
+
+                                            <div class="flex-between flex-wrap gap-3">
+                                                <label style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--cb-text-secondary);">
+                                                    <input type="hidden" name="IsActive" value="false" />
+                                                    <input type="checkbox" name="IsActive" value="true" @(court.IsActive ? "checked" : null) />
+                                                    <span>Bật trạng thái hoạt động</span>
+                                                </label>
+                                                <button type="submit" class="btn btn-outline btn-sm">Lưu sân con</button>
+                                            </div>
+                                        </form>
+                                    }
+                                }
+                            </div>
+
+                            <div style="height: 1px; background-color: var(--cb-border); margin: 1.5rem 0;"></div>
+
+                            <form asp-controller="Owner" asp-action="CreateCourt" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="VenueId" value="@selectedVenue.Id" />
+                                <input type="hidden" name="SelectedVenueId" value="@selectedVenue.Id" />
+
+                                <div class="flex-between flex-wrap gap-3" style="margin-bottom: 1rem;">
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 1rem;">Thêm sân con mới</h4>
+                                        <p class="text-xs text-muted" style="margin-top: 0.25rem;">Sân mới được tạo ở trạng thái hoạt động và sẽ thuộc venue đang chọn.</p>
                                     </div>
                                 </div>
 
                                 <div style="display: flex; flex-direction: column; gap: 1rem;">
                                     <div class="form-grid-2">
                                         <div class="form-group">
-                                            <label class="form-label">Tên cụm sân</label>
-                                            <input type="text" class="form-input" value="@venue.Name" />
+                                            <label class="form-label" for="new-court-name">Tên sân</label>
+                                            <input id="new-court-name" name="Name" type="text" class="form-input" placeholder="Ví dụ: Sân số 5" />
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label">Khu vực</label>
-                                            <input type="text" class="form-input" value="@venue.District" />
+                                            <label class="form-label" for="new-court-price">Giá thuê mỗi giờ</label>
+                                            <input id="new-court-price" name="PricePerHour" type="number" class="form-input" min="50000" step="5000" value="100000" />
                                         </div>
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="form-label">Địa chỉ cụ thể</label>
-                                        <input type="text" class="form-input" value="@venue.Address" />
-                                    </div>
-
-                                    <div class="form-grid-2">
-                                        <div class="form-group">
-                                            <label class="form-label">Giờ mở cửa</label>
-                                            <input type="text" class="form-input" value="@venue.OpenHours.Split(" – ")[0]" />
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Giờ đóng cửa</label>
-                                            <input type="text" class="form-input" value="@venue.OpenHours.Split(" – ")[1]" />
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group" style="margin-bottom: 0;">
-                                        <label class="form-label">Giới thiệu giới thiệu</label>
-                                        <textarea class="form-textarea" rows="3">@venue.Description</textarea>
+                                        <label class="form-label" for="new-court-note">Ghi chú</label>
+                                        <input id="new-court-note" name="Note" type="text" class="form-input" placeholder="Ví dụ: Sân VIP, sát quầy nước..." />
                                     </div>
                                 </div>
 
-                                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
-                                    <button class="btn btn-outline" onclick="showToast('Khôi phục cấu hình mặc định', 'success')">Hủy</button>
-                                    <button class="btn btn-primary" onclick="showToast('Đã cập nhật thông tin cụm sân @venue.Name thành công!', 'success')">Lưu thay đổi</button>
+                                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                                    <button type="submit" class="btn btn-primary">Thêm sân con</button>
                                 </div>
-                            </div>
-
-                            <!-- Individual Sub-courts Card -->
-                            <div class="card" style="padding: 1.5rem; border-color: var(--cb-border); background-color: white;">
-                                <div class="flex-between" style="margin-bottom: 1.25rem;">
-                                    <div>
-                                        <h3 style="font-size: 1.125rem; font-weight: 600; margin: 0;">Danh sách sân con</h3>
-                                        <p class="text-xs text-muted" style="margin-top: 0.25rem;">Cài đặt đơn giá dịch vụ hoặc ghi chú riêng biệt cho từng sân con.</p>
-                                    </div>
-                                    <button class="btn btn-outline btn-sm" onclick="openModal('add-court-modal')">
-                                        <i data-lucide="plus" style="width:14px;height:14px"></i> Thêm sân con
-                                    </button>
-                                </div>
-
-                                <div style="display: flex; flex-direction: column; gap: 0.5rem;" id="court-list-@venue.Id">
-                                    @foreach (var court in venue.Courts)
-                                    {
-                                        <div class="court-item" style="border: 1px solid var(--cb-border-light); border-radius: var(--cb-radius); padding: 0.75rem 1rem; background-color: var(--cb-section-alt); display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
-                                            <div style="flex: 1; min-width: 0;">
-                                                <div class="font-semibold text-sm text-slate-900 truncate">@court.Name</div>
-                                                <div class="text-xs text-muted truncate">@(string.IsNullOrEmpty(court.Note) ? "Sân tiêu chuẩn" : court.Note)</div>
-                                            </div>
-                                            <div class="text-sm font-semibold text-slate-900" style="margin: 0 1rem;">
-                                                @BadmintonCourtBooking.Models.MockData.FormatVND(court.PricePerHour)/giờ
-                                            </div>
-                                            <span class="badge badge-emerald">Hoạt động</span>
-                                            <div style="display: flex; gap: 0.25rem;">
-                                                <button class="btn btn-icon btn-ghost" onclick="showToast('Chỉnh sửa @court.Name', 'success')">
-                                                    <i data-lucide="pencil" style="width:14px;height:14px"></i>
-                                                </button>
-                                                <button class="btn btn-icon btn-ghost text-rose-600 hover:text-rose-700" onclick="if(confirm('Bạn có chắc muốn xóa sân con này?')) { this.parentElement.parentElement.remove(); showToast('Đã xóa sân con thành công!', 'success'); }">
-                                                    <i data-lucide="trash-2" style="width:14px;height:14px"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
+                            </form>
                         </div>
                     }
+                    else
+                    {
+                        <div class="card" style="padding: 1.5rem; border-style: dashed; border-color: var(--cb-border); background-color: white;">
+                            <div class="font-semibold text-slate-900">Chưa có venue nào để chỉnh sửa</div>
+                            <p class="text-sm text-secondary" style="margin-top: 0.375rem;">Hãy tạo một cụm sân mới bằng form bên dưới. Sau khi tạo xong, trang sẽ tự chọn venue đó để bạn thêm sân con.</p>
+                        </div>
+                    }
+
+                    <div class="card" id="new-venue-form" style="padding: 1.5rem; border-color: var(--cb-border); background-color: white;">
+                        <div class="flex-between flex-wrap gap-3" style="margin-bottom: 1.25rem;">
+                            <div>
+                                <h3 style="font-size: 1.125rem; font-weight: 600; margin: 0;">Tạo cụm sân mới</h3>
+                                <p class="text-xs text-muted" style="margin-top: 0.25rem;">Venue mới sẽ gắn với tài khoản owner hiện tại và chuyển sang trạng thái chờ duyệt.</p>
+                            </div>
+                            <span class="badge badge-amber">Chờ duyệt sau khi tạo</span>
+                        </div>
+
+                        <form asp-controller="Owner" asp-action="CreateVenue" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="SelectedVenueId" value="@selectedVenue?.Id" />
+
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div class="form-grid-2">
+                                    <div class="form-group">
+                                        <label class="form-label" for="new-venue-name">Tên cụm sân</label>
+                                        <input id="new-venue-name" name="Name" type="text" class="form-input" placeholder="Ví dụ: Sân Cầu Lông An Phú" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="new-venue-district">Khu vực</label>
+                                        <input id="new-venue-district" name="District" type="text" class="form-input" placeholder="Ví dụ: TP. Thủ Đức" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="new-venue-address">Địa chỉ</label>
+                                    <input id="new-venue-address" name="Address" type="text" class="form-input" placeholder="Số nhà, đường, phường, quận..." />
+                                </div>
+
+                                <div class="form-grid-2">
+                                    <div class="form-group">
+                                        <label class="form-label" for="new-venue-open">Giờ mở cửa</label>
+                                        <input id="new-venue-open" name="OpenTime" type="text" class="form-input" value="06:00" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="new-venue-close">Giờ đóng cửa</label>
+                                        <input id="new-venue-close" name="CloseTime" type="text" class="form-input" value="22:00" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="new-venue-desc">Mô tả</label>
+                                    <textarea id="new-venue-desc" name="Description" class="form-textarea" rows="4" placeholder="Giới thiệu cơ sở vật chất, vị trí địa lý, ưu điểm nổi bật..."></textarea>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                                <button type="submit" class="btn btn-primary">Tạo cụm sân</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </section>
     </div>
 </div>
 
-<!-- Add Venue Modal -->
-<div class="modal-overlay" id="add-venue-modal">
-    <div class="cb-modal animate-slideUp">
-        <h3 class="cb-modal-title flex items-center gap-2" style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
-            <i data-lucide="plus-circle" style="width:20px;height:20px;color:var(--cb-primary)"></i> Thêm cụm sân mới
-        </h3>
-        
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <div class="form-group">
-                <label class="form-label">Tên cụm sân</label>
-                <input type="text" class="form-input" id="new-venue-name" placeholder="Ví dụ: Sân Cầu Lông An Phú" />
-            </div>
-            <div class="form-group">
-                <label class="form-label">Địa chỉ</label>
-                <input type="text" class="form-input" id="new-venue-address" placeholder="Số nhà, đường, phường, quận..." />
-            </div>
-            <div class="form-group">
-                <label class="form-label">Mô tả cụm sân</label>
-                <textarea class="form-textarea" rows="3" id="new-venue-desc" placeholder="Giới thiệu chung về cơ sở vật chất, vị trí địa lý..."></textarea>
-            </div>
-            <div class="form-grid-2">
-                <div class="form-group">
-                    <label class="form-label">Giờ mở cửa</label>
-                    <input type="text" class="form-input" id="new-venue-open" value="06:00" />
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Giờ đóng cửa</label>
-                    <input type="text" class="form-input" id="new-venue-close" value="22:00" />
-                </div>
-            </div>
-        </div>
-
-        <div class="cb-modal-footer" style="margin-top: 1.5rem;">
-            <button class="btn btn-outline" onclick="closeModal('add-venue-modal')">Hủy bỏ</button>
-            <button class="btn btn-primary" id="submit-new-venue-btn">Tạo cụm sân</button>
-        </div>
-    </div>
-</div>
-
-<!-- Add Court Modal -->
-<div class="modal-overlay" id="add-court-modal">
-    <div class="cb-modal animate-slideUp" style="max-width: 420px;">
-        <h3 class="cb-modal-title flex items-center gap-2" style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">
-            <i data-lucide="plus-circle" style="width:20px;height:20px;color:var(--cb-primary)"></i> Thêm sân con mới
-        </h3>
-        
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <div class="form-group">
-                <label class="form-label">Tên sân</label>
-                <input type="text" class="form-input" id="new-court-name" placeholder="Ví dụ: Sân số 5" />
-            </div>
-            <div class="form-group">
-                <label class="form-label">Giá thuê mỗi giờ (₫)</label>
-                <input type="number" class="form-input" id="new-court-price" value="100000" />
-            </div>
-            <div class="form-group">
-                <label class="form-label">Ghi chú riêng (không bắt buộc)</label>
-                <input type="text" class="form-input" id="new-court-note" placeholder="Ví dụ: Sân VIP sàn mới, có điều hòa..." />
-            </div>
-        </div>
-
-        <div class="cb-modal-footer" style="margin-top: 1.5rem;">
-            <button class="btn btn-outline" onclick="closeModal('add-court-modal')">Hủy bỏ</button>
-            <button class="btn btn-primary" id="submit-new-court-btn">Thêm sân con</button>
-        </div>
-    </div>
-</div>
-
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const listCards = document.querySelectorAll('.venue-list-card');
-            const formPanels = document.querySelectorAll('.venue-form-panel');
-
-            // ── Sidebar selection event handler ──
-            listCards.forEach(card => {
-                card.addEventListener('click', function () {
-                    const venueId = this.getAttribute('data-venueid');
-                    
-                    // Highlight selected card
-                    listCards.forEach(c => c.classList.remove('selected'));
-                    this.classList.add('selected');
-
-                    // Toggle corresponding edit panel
-                    formPanels.forEach(p => p.style.display = 'none');
-                    const targetPanel = document.getElementById(`venue-form-${venueId}`);
-                    if (targetPanel) {
-                        targetPanel.style.display = 'block';
-                    }
-                });
-            });
-
-            // ── Add Venue submit handler ──
-            const submitNewVenueBtn = document.getElementById('submit-new-venue-btn');
-            if (submitNewVenueBtn) {
-                submitNewVenueBtn.addEventListener('click', function () {
-                    const name = document.getElementById('new-venue-name').value.trim();
-                    if (!name) {
-                        alert("Vui lòng nhập tên cụm sân!");
-                        return;
-                    }
-                    
-                    closeModal('add-venue-modal');
-                    if (window.showToast) {
-                        window.showToast(`Đã gửi yêu cầu tạo cụm sân "${name}". Lịch duyệt sẽ có sau 1-2 ngày làm việc.`, 'success', 5000);
-                    }
-                    // Reset fields
-                    document.getElementById('new-venue-name').value = '';
-                    document.getElementById('new-venue-address').value = '';
-                    document.getElementById('new-venue-desc').value = '';
-                });
-            }
-
-            // ── Add Court submit handler ──
-            const submitNewCourtBtn = document.getElementById('submit-new-court-btn');
-            if (submitNewCourtBtn) {
-                submitNewCourtBtn.addEventListener('click', function () {
-                    const name = document.getElementById('new-court-name').value.trim();
-                    const price = document.getElementById('new-court-price').value.trim();
-                    const note = document.getElementById('new-court-note').value.trim();
-
-                    if (!name) {
-                        alert("Vui lòng nhập tên sân con!");
-                        return;
-                    }
-
-                    // Get the selected venue's court list container
-                    const selectedVenueCard = document.querySelector('.venue-list-card.selected');
-                    if (!selectedVenueCard) return;
-
-                    const venueId = selectedVenueCard.getAttribute('data-venueid');
-                    const courtContainer = document.getElementById(`court-list-${venueId}`);
-
-                    if (courtContainer) {
-                        // Create a new court item DOM element
-                        const newItem = document.createElement('div');
-                        newItem.className = 'court-item';
-                        newItem.style = 'border: 1px solid var(--cb-border-light); border-radius: var(--cb-radius); padding: 0.75rem 1rem; background-color: var(--cb-section-alt); display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;';
-                        
-                        const formattedPrice = new Intl.NumberFormat('vi-VN').format(price || 100000) + '₫';
-
-                        newItem.innerHTML = `
-                            <div style="flex: 1; min-width: 0;">
-                                <div class="font-semibold text-sm text-slate-900 truncate">${name}</div>
-                                <div class="text-xs text-muted truncate">${note || 'Sân tiêu chuẩn'}</div>
-                            </div>
-                            <div class="text-sm font-semibold text-slate-900" style="margin: 0 1rem;">
-                                ${formattedPrice}/giờ
-                            </div>
-                            <span class="badge badge-emerald">Hoạt động</span>
-                            <div style="display: flex; gap: 0.25rem;">
-                                <button class="btn btn-icon btn-ghost" onclick="showToast('Chỉnh sửa ${name}', 'success')">
-                                    <i data-lucide="pencil" style="width:14px;height:14px"></i>
-                                </button>
-                                <button class="btn btn-icon btn-ghost text-rose-600 hover:text-rose-700" onclick="if(confirm('Bạn có chắc muốn xóa sân con này?')) { this.parentElement.parentElement.remove(); showToast('Đã xóa sân con thành công!', 'success'); }">
-                                    <i data-lucide="trash-2" style="width:14px;height:14px"></i>
-                                </button>
-                            </div>
-                        `;
-
-                        courtContainer.appendChild(newItem);
-                        lucide.createIcons({ nodes: [newItem] });
-                    }
-
-                    closeModal('add-court-modal');
-                    if (window.showToast) {
-                        window.showToast(`Đã thêm sân con "${name}" thành công!`, 'success');
-                    }
-
-                    // Reset fields
-                    document.getElementById('new-court-name').value = '';
-                    document.getElementById('new-court-price').value = '100000';
-                    document.getElementById('new-court-note').value = '';
-                });
+            @if (TempData["ToastMessage"] != null)
+            {
+                <text>
+                if (window.showToast) {
+                    window.showToast("@TempData["ToastMessage"]", "@TempData["ToastType"]", 4000);
+                }
+                </text>
             }
         });
     </script>
