@@ -62,7 +62,7 @@ public class RequireActiveUserFilter(ApplicationDbContext context) : IAsyncActio
             return new JsonResult(new
             {
                 success = false,
-                message = "Tài khoản của bạn đang bị khóa. Vui lòng liên hệ quản trị viên CourtBook."
+                message = "Tài khoản của bạn đang bị khóa. Vui lòng liên hệ quản trị viên Đặt Sân Cầu Lông."
             })
             {
                 StatusCode = StatusCodes.Status401Unauthorized

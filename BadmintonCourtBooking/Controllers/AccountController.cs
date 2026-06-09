@@ -32,7 +32,7 @@ namespace BadmintonCourtBooking.Controllers
 
             if (locked)
             {
-                TempData["ToastMessage"] = "Tài khoản của bạn đang bị khóa. Vui lòng liên hệ quản trị viên CourtBook.";
+                TempData["ToastMessage"] = "Tài khoản của bạn đang bị khóa. Vui lòng liên hệ quản trị viên Đặt Sân Cầu Lông.";
                 TempData["ToastType"] = "error";
             }
 
@@ -250,6 +250,63 @@ namespace BadmintonCourtBooking.Controllers
                     IsPersistent = rememberMe,
                     ExpiresUtc = rememberMe ? DateTimeOffset.UtcNow.AddDays(14) : null
                 });
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ExternalLogin(string provider, string? returnUrl = null)
+        {
+            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
+            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            return Challenge(properties, provider);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, CancellationToken cancellationToken = default)
+        {
+            var authResult = await HttpContext.AuthenticateAsync("ExternalCookie");
+            if (!authResult.Succeeded || authResult.Principal == null)
+            {
+                TempData["ToastMessage"] = "Đăng nhập bằng mạng xã hội không thành công hoặc đã bị hủy.";
+                TempData["ToastType"] = "error";
+                return RedirectToAction(nameof(Login));
+            }
+
+            var claims = authResult.Principal.Claims;
+            var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            var name = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? "Người dùng mạng xã hội";
+
+            if (string.IsNullOrEmpty(email))
+            {
+                TempData["ToastMessage"] = "Không thể lấy thông tin Email từ tài khoản của bạn.";
+                TempData["ToastType"] = "error";
+                return RedirectToAction(nameof(Login));
+            }
+
+            var userResult = await _accountService.GetOrCreateExternalUserAsync(email, name, cancellationToken);
+            if (!userResult.Succeeded || userResult.Data == null)
+            {
+                TempData["ToastMessage"] = userResult.Message;
+                TempData["ToastType"] = "error";
+                return RedirectToAction(nameof(Login));
+            }
+
+            var user = userResult.Data;
+            if (!user.IsActive)
+            {
+                TempData["ToastMessage"] = "Tài khoản của bạn đang bị khóa. Vui lòng liên hệ quản trị viên.";
+                TempData["ToastType"] = "error";
+                return RedirectToAction(nameof(Login));
+            }
+
+            await SignInAsync(user, true);
+            await HttpContext.SignOutAsync("ExternalCookie");
+
+            TempData["ToastMessage"] = $"Đăng nhập thành công! Chào mừng {user.FullName}!";
+            TempData["ToastType"] = "success";
+
+            return RedirectAfterAuthentication(returnUrl, user.Role);
         }
 
         private IActionResult RedirectAfterAuthentication(string? returnUrl, string? role = null)

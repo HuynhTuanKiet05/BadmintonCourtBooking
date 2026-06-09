@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 sidebarEmpty.style.display = 'block';
             }
             if (mobileBar) {
-                mobileBar.style.display = 'none';
+                mobileBar.classList.remove('visible');
             }
             return;
         }
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (mobileBar) {
-            mobileBar.style.display = 'flex';
+            mobileBar.classList.add('visible');
         }
         if (mobileSummary) {
             mobileSummary.textContent = `${selectedSlot.courtName} · ${selectedSlot.time} – ${selectedSlot.nextTime}`;
@@ -279,6 +279,23 @@ document.addEventListener('DOMContentLoaded', function () {
         modalSubmitBtn.textContent = 'Đang gửi...';
         bookingForm.submit();
     });
+
+    // Auto-select slot from URL parameters if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const timeParam = urlParams.get('time');
+    if (timeParam) {
+        const targetBtn = document.querySelector(`.slot-pill.slot-available[data-time="${timeParam}"]`);
+        if (targetBtn) {
+            selectedSlot = {
+                courtId: targetBtn.getAttribute('data-courtid'),
+                courtName: targetBtn.getAttribute('data-courtname'),
+                time: targetBtn.getAttribute('data-time'),
+                nextTime: targetBtn.getAttribute('data-nexttime'),
+                price: parseInt(targetBtn.getAttribute('data-price') || '0', 10),
+                priceFormatted: targetBtn.getAttribute('data-priceformatted')
+            };
+        }
+    }
 
     updateSelectionUI();
 });

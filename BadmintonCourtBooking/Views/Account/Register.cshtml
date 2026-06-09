@@ -9,7 +9,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CourtBook</title>
+    <title>@ViewData["Title"] - Đặt Sân Cầu Lông</title>
     
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -342,11 +342,30 @@
                     <div>
                         <a asp-controller="Home" asp-action="Index" class="logo-box">
                             <div class="logo-icon-auth">
-                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M5 19l9-9" /><circle cx="16" cy="7" r="3" /><path d="M3 21l4-1 1-3" />
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <!-- Racket Head -->
+                                    <ellipse cx="15.5" cy="8.5" rx="4.2" ry="5.2" transform="rotate(45 15.5 8.5)" stroke="currentColor" stroke-width="1.8" />
+                                    
+                                    <!-- String Grid -->
+                                    <g transform="rotate(45 15.5 8.5)" opacity="0.8">
+                                        <path d="M15.5 3.3 V13.7 M13.7 3.9 V13.1 M17.3 3.9 V13.1 M11.3 8.5 H19.7 M12.0 6.3 H19.0 M12.0 10.7 H19.0" stroke="currentColor" stroke-width="0.8" />
+                                    </g>
+                                    
+                                    <!-- Shaft -->
+                                    <line x1="12.0" y1="12.0" x2="5.5" y2="18.5" stroke="currentColor" stroke-width="1.8" />
+                                    <!-- Grip -->
+                                    <line x1="5.5" y1="18.5" x2="2.5" y2="21.5" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" />
+                                    
+                                    <!-- Shuttlecock -->
+                                    <!-- Cork Base -->
+                                    <circle cx="8.2" cy="8.2" r="1.6" fill="currentColor" stroke="none" />
+                                    <!-- Feather Skirt -->
+                                    <path d="M7.0 7.0 L3.0 3.0 M7.2 8.2 L3.2 5.0 M8.2 7.2 L5.0 3.2 M6.8 8.0 L3.0 6.0 M8.0 6.8 L6.0 3.0" stroke="currentColor" stroke-width="1.2" />
+                                    <!-- Connecting threads -->
+                                    <path d="M4.2 4.2 C 4.8 3.8, 5.2 4.2, 5.8 4.2 M 4.8 5.2 C 5.2 4.8, 5.2 5.2, 5.8 4.8" stroke="currentColor" stroke-width="0.8" fill="none" />
                                 </svg>
                             </div>
-                            CourtBook
+                            Đặt Sân Cầu Lông
                         </a>
                     </div>
                     <div>
@@ -354,7 +373,7 @@
                             Đặt sân cầu lông trong vài chạm.<br />Chọn giờ chơi gọn gàng mỗi ngày.
                         </h2>
                         <p class="text-white-50 fs-6 mb-4" style="max-width: 460px;">
-                            Hơn 12.000 người chơi đang dùng CourtBook để tìm sân nhanh hơn, minh bạch hơn — không còn cảnh gọi điện hỏi sân trống.
+                            Hơn 12.000 người chơi đang dùng hệ thống để tìm sân nhanh hơn, minh bạch hơn — không còn cảnh gọi điện hỏi sân trống.
                         </p>
                         <div class="row g-3" style="max-width: 460px;">
                             <div class="col-4">
@@ -378,7 +397,7 @@
                         </div>
                     </div>
                     <div class="text-white-50" style="font-size: 0.75rem;">
-                        © 2026 CourtBook Platform
+                        © 2026 Đặt Sân Cầu Lông
                     </div>
                 </div>
             </div>
@@ -417,7 +436,7 @@
                             <!-- Slide 1: Login Form (Inactive by default on Register page) -->
                             <div class="auth-slide" id="login-slide">
                                 <div class="mb-4">
-                                    <h3 class="fw-bold text-slate-900 mb-1">Đăng nhập CourtBook</h3>
+                                    <h3 class="fw-bold text-slate-900 mb-1">Đăng nhập hệ thống</h3>
                                     <p class="text-slate-500" style="font-size: 0.875rem;">Tiếp tục tìm sân, đặt lịch và quản lý lịch chơi của bạn.</p>
                                 </div>
 

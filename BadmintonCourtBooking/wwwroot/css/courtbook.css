@@ -959,7 +959,7 @@
         display: none;
     }
 
-    .mobile-booking-bar {
+    .mobile-booking-bar.visible {
         display: flex;
         position: fixed;
         bottom: 0;

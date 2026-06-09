@@ -1,7 +1,52 @@
 @model List<BadmintonCourtBooking.Models.Venue>
 @{
-    ViewData["Title"] = "Trang chủ - CourtBook";
+    ViewData["Title"] = "Trang chủ - Đặt Sân Cầu Lông";
     var heroVenue = Model.FirstOrDefault();
+
+    var displayDate = DateTime.Today;
+    var dateLabel = "Hôm nay";
+    if (DateTime.Now.Hour >= 20)
+    {
+        displayDate = DateTime.Today.AddDays(1);
+        dateLabel = "Ngày mai";
+    }
+
+    // Get the slot matrix from ViewBag
+    var slotMatrix = ViewBag.HeroSlotMatrix as Dictionary<string, Dictionary<string, BadmintonCourtBooking.Models.SlotStatus>>;
+    
+    // Determine the court to show
+    var heroCourt = heroVenue?.Courts.FirstOrDefault();
+    var courtName = heroCourt?.Name ?? "Sân 1";
+    
+    // Default mock slots
+    var displaySlots = new List<string> { "17:00", "18:00", "19:00", "20:00" };
+    
+    // Resolve status for each slot
+    var slotStatuses = new Dictionary<string, BadmintonCourtBooking.Models.SlotStatus>();
+    foreach (var slot in displaySlots)
+    {
+        var status = BadmintonCourtBooking.Models.SlotStatus.Unavailable; // default if not found (or in past)
+        
+        if (slotMatrix != null && slotMatrix.ContainsKey(courtName) && slotMatrix[courtName].ContainsKey(slot))
+        {
+            status = slotMatrix[courtName][slot];
+        }
+        else
+        {
+            // Fallback / past time check
+            var slotStart = displayDate.Date.Add(TimeSpan.Parse(slot));
+            if (slotStart > DateTime.Now)
+            {
+                status = BadmintonCourtBooking.Models.SlotStatus.Available;
+            }
+        }
+        
+        slotStatuses[slot] = status;
+    }
+
+    // Find the first available slot to mark as selected by default
+    var defaultSelectedSlot = displaySlots.FirstOrDefault(slot => slotStatuses[slot] == BadmintonCourtBooking.Models.SlotStatus.Available) 
+        ?? "18:00"; // fallback if all booked
 }
 
 <!-- Hero Section -->
@@ -19,7 +64,7 @@
                 Đặt sân cầu lông dễ hơn,<br />chọn giờ chơi nhanh hơn.
             </h1>
             <p class="hero-desc">
-                CourtBook giúp người chơi tìm khung giờ trống, xem thông tin sân rõ ràng và đặt lịch trực tuyến chỉ trong vài chạm.
+                Đặt Sân Cầu Lông giúp người chơi tìm khung giờ trống, xem thông tin sân rõ ràng và đặt lịch trực tuyến chỉ trong vài chạm.
             </p>
             <div class="hero-cta">
                 <a asp-controller="Venue" asp-action="Index" class="btn btn-primary btn-lg">
@@ -46,25 +91,44 @@
                     </div>
                     <span class="badge badge-emerald">@(heroVenue?.HasSlotsToday == true ? "Còn slot hôm nay" : "Nổi bật tuần này")</span>
                 </div>
-                <div class="text-xs text-muted" style="margin-top: 1rem;">Hôm nay · Thứ 4, 20/05/2026</div>
+                <div class="text-xs text-muted" style="margin-top: 1rem;">@dateLabel · @BadmintonCourtBooking.Services.PresentationFormatter.FormatBookingDate(displayDate)</div>
                 <div style="margin-top: 0.75rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
-                    <button class="slot-pill slot-available">17:00</button>
-                    <button class="slot-pill slot-selected">18:00</button>
-                    <button class="slot-pill slot-booked" disabled>19:00</button>
-                    <button class="slot-pill slot-available">20:00</button>
+                    @foreach (var slot in displaySlots)
+                    {
+                        var status = slotStatuses[slot];
+                        var isSelected = slot == defaultSelectedSlot;
+                        
+                        if (status == BadmintonCourtBooking.Models.SlotStatus.Available)
+                        {
+                            var cls = isSelected ? "slot-pill slot-selected hero-slot-btn" : "slot-pill slot-available hero-slot-btn";
+                            <button class="@cls" data-time="@slot">@slot</button>
+                        }
+                        else if (status == BadmintonCourtBooking.Models.SlotStatus.Pending)
+                        {
+                            <button class="slot-pill slot-booked hero-slot-btn" data-time="@slot" disabled title="Đang chờ duyệt">@slot</button>
+                        }
+                        else
+                        {
+                            <button class="slot-pill slot-booked hero-slot-btn" data-time="@slot" disabled>@slot</button>
+                        }
+                    }
                 </div>
                 <div class="flex-between" style="margin-top: 1.25rem; border-top: 1px dashed var(--cb-border); padding-top: 1rem;">
                     <div>
-                        <div class="text-xs text-muted">Sân VIP · 18:00 – 19:00</div>
-                        <div class="font-bold" style="color:var(--cb-primary); font-size:1.125rem">@(heroVenue is null ? "150.000₫" : BadmintonCourtBooking.Models.MockData.FormatVND(heroVenue.PriceFrom))</div>
+                        @{
+                            var h = int.Parse(defaultSelectedSlot.Split(':')[0]);
+                            var defaultEndSlot = $"{(h + 1):D2}:00";
+                        }
+                        <div class="text-xs text-muted" id="hero-selected-slot-info">@courtName · @defaultSelectedSlot – @defaultEndSlot</div>
+                        <div class="font-bold" style="color:var(--cb-primary); font-size:1.125rem">@(heroCourt != null ? BadmintonCourtBooking.Models.MockData.FormatVND(heroCourt.PricePerHour) : (heroVenue is null ? "150.000₫" : BadmintonCourtBooking.Models.MockData.FormatVND(heroVenue.PriceFrom)))</div>
                     </div>
                     @if (heroVenue is null)
                     {
-                        <a asp-controller="Venue" asp-action="Index" class="btn btn-primary">Đặt sân</a>
+                        <a asp-controller="Venue" asp-action="Index" class="btn btn-primary" id="hero-booking-btn" data-date="@displayDate.ToString("yyyy-MM-dd")">Đặt sân</a>
                     }
                     else
                     {
-                        <a asp-controller="Venue" asp-action="Detail" asp-route-id="@heroVenue.Id" class="btn btn-primary">Đặt sân</a>
+                        <a asp-controller="Venue" asp-action="Detail" asp-route-id="@heroVenue.Id" class="btn btn-primary" id="hero-booking-btn" data-date="@displayDate.ToString("yyyy-MM-dd")">Đặt sân</a>
                     }
                 </div>
             </div>
@@ -132,3 +196,58 @@
 
 <!-- Footer -->
 @await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const slots = document.querySelectorAll(".hero-slot-btn");
+            const infoText = document.getElementById("hero-selected-slot-info");
+            const bookingBtn = document.getElementById("hero-booking-btn");
+
+            // Store original URL and set initial time & date parameter
+            if (bookingBtn) {
+                const originalUrl = bookingBtn.getAttribute("href");
+                const dateVal = bookingBtn.getAttribute("data-date");
+                const defaultTime = "@defaultSelectedSlot";
+                bookingBtn.setAttribute("data-original-url", originalUrl);
+                if (originalUrl) {
+                    const separator = originalUrl.includes("?") ? "&" : "?";
+                    bookingBtn.setAttribute("href", `${originalUrl}${separator}time=${defaultTime}&date=${dateVal}`);
+                }
+            }
+
+            slots.forEach(slot => {
+                slot.addEventListener("click", function () {
+                    if (this.classList.contains("slot-booked")) return;
+
+                    // Reset all slots to available class
+                    slots.forEach(s => {
+                        if (!s.classList.contains("slot-booked")) {
+                            s.className = "slot-pill slot-available hero-slot-btn";
+                        }
+                    });
+
+                    // Set current slot as selected
+                    this.className = "slot-pill slot-selected hero-slot-btn";
+
+                    // Update slot info description
+                    const time = this.getAttribute("data-time");
+                    const hour = parseInt(time.split(":")[0], 10);
+                    const endTime = `${(hour + 1).toString().padStart(2, '0')}:00`;
+
+                    infoText.textContent = `@Html.Raw(courtName) · ${time} – ${endTime}`;
+
+                    // Update button link to pass the selected slot time and date
+                    if (bookingBtn) {
+                        const originalUrl = bookingBtn.getAttribute("data-original-url");
+                        const dateVal = bookingBtn.getAttribute("data-date");
+                        if (originalUrl) {
+                            const separator = originalUrl.includes("?") ? "&" : "?";
+                            bookingBtn.setAttribute("href", `${originalUrl}${separator}time=${time}&date=${dateVal}`);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}

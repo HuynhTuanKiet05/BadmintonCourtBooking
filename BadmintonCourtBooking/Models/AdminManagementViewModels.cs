@@ -60,7 +60,7 @@ public class AdminUserOverviewViewModel
     public string StatusLabel => IsActive ? "Đang hoạt động" : "Đã khóa";
     public string StatusTone => IsActive ? "emerald" : "rose";
 
-    public string ActivitySummary => $"{PlayerBookingCount} booking đã tạo";
+    public string ActivitySummary => $"{PlayerBookingCount} lượt đặt đã tạo";
 
     public bool CanLock => IsActive && Role != AppRoles.Admin;
     public bool CanUnlock => !IsActive && Role != AppRoles.Admin;
@@ -174,9 +174,9 @@ public class AdminManagedVenueViewModel
 
     public string StatusDescription => Status switch
     {
-        VenueStatus.Approved => "Venue đang hiển thị trên trang public và có thể nhận booking mới.",
-        VenueStatus.Rejected => "Venue đang được ẩn khỏi trang public. Admin có thể công khai lại trên dashboard.",
-        VenueStatus.PendingApproval => "Venue đang ở trạng thái chờ xử lý.",
+        VenueStatus.Approved => "Cụm sân đang hiển thị trên trang công khai và có thể nhận lượt đặt mới.",
+        VenueStatus.Rejected => "Cụm sân đang được ẩn khỏi trang công khai. Quản trị viên có thể công khai lại trên bảng điều khiển.",
+        VenueStatus.PendingApproval => "Cụm sân đang ở trạng thái chờ xử lý.",
         _ => "Chưa có trạng thái phù hợp."
     };
 }

@@ -19,6 +19,21 @@ namespace BadmintonCourtBooking.Controllers
         public async Task<IActionResult> Index()
         {
             var featuredVenues = await _venueCatalogService.GetFeaturedVenuesAsync();
+            var heroVenue = featuredVenues.FirstOrDefault();
+            
+            if (heroVenue is not null)
+            {
+                var displayDate = DateTime.Today;
+                if (DateTime.Now.Hour >= 20)
+                {
+                    displayDate = DateTime.Today.AddDays(1);
+                }
+                
+                var dateKey = PresentationFormatter.FormatDateChip(displayDate);
+                var slotMatrix = await _venueCatalogService.GetSlotMatrixAsync(heroVenue.Id, dateKey);
+                ViewBag.HeroSlotMatrix = slotMatrix;
+            }
+            
             return View(featuredVenues);
         }
 

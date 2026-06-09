@@ -1,7 +1,7 @@
 @using System.Text.Json
 @model BadmintonCourtBooking.Models.VenueDetailViewModel
 @{
-    ViewData["Title"] = $"{Model.Venue.Name} - CourtBook";
+    ViewData["Title"] = $"{Model.Venue.Name} - Đặt Sân Cầu Lông";
 
     var isAuthenticated = User.Identity?.IsAuthenticated == true;
     var canSubmitBooking = User.IsInRole(BadmintonCourtBooking.Models.AppRoles.Player);
@@ -73,7 +73,7 @@
                 <div class="grid-2 gap-3" style="margin-top: 1.25rem;">
                     @foreach (var court in Model.Venue.Courts)
                     {
-                        <div style="display: flex; align-items: center; justify-between: space-between; border: 1px solid var(--cb-border-light); border-radius: var(--cb-radius); padding: 0.625rem 0.875rem; background-color: var(--cb-section-alt);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--cb-border-light); border-radius: var(--cb-radius); padding: 0.625rem 0.875rem; background-color: var(--cb-section-alt);">
                             <div>
                                 <div class="font-medium text-sm">@court.Name</div>
                                 @if (!string.IsNullOrEmpty(court.Note))
@@ -139,38 +139,31 @@
                                     @foreach (var court in Model.Venue.Courts)
                                     {
                                         var status = Model.SlotMatrix[court.Name][slot];
+                                        var btnClass = status switch
+                                        {
+                                            BadmintonCourtBooking.Models.SlotStatus.Available => "slot-pill slot-available w-full",
+                                            BadmintonCourtBooking.Models.SlotStatus.Pending => "slot-pill slot-pending w-full",
+                                            _ => "slot-pill slot-booked w-full"
+                                        };
+                                        var isDisabled = status != BadmintonCourtBooking.Models.SlotStatus.Available;
+                                        var btnText = status switch
+                                        {
+                                            BadmintonCourtBooking.Models.SlotStatus.Available => "Trống",
+                                            BadmintonCourtBooking.Models.SlotStatus.Pending => "Chờ duyệt",
+                                            BadmintonCourtBooking.Models.SlotStatus.Unavailable => "Đã qua",
+                                            _ => "Đã đặt"
+                                        };
+
                                         <td style="padding: 0.25rem; border-left: 1px solid var(--cb-border-light); text-align: center;">
-                                            @if (status == BadmintonCourtBooking.Models.SlotStatus.Booked)
-                                            {
-                                                <button class="slot-pill slot-booked w-full" disabled style="display: block; width: 100%;">Đã đặt</button>
-                                            }
-                                            else if (status == BadmintonCourtBooking.Models.SlotStatus.Unavailable)
-                                            {
-                                                <button class="slot-pill slot-booked w-full" disabled style="display: block; width: 100%;">Đã qua</button>
-                                            }
-                                            else if (status == BadmintonCourtBooking.Models.SlotStatus.Pending)
-                                            {
-                                                <button class="slot-pill slot-pending w-full"
-                                                        disabled
-                                                        data-courtid="@court.Id" 
-                                                        data-courtname="@court.Name" 
-                                                        data-price="@court.PricePerHour"
-                                                        data-priceformatted="@BadmintonCourtBooking.Models.MockData.FormatVND(court.PricePerHour)"
-                                                        data-time="@slot" 
-                                                        data-nexttime="@nextSlot"
-                                                        style="display: block; width: 100%;">Chờ duyệt</button>
-                                            }
-                                            else
-                                            {
-                                                <button class="slot-pill slot-available w-full" 
-                                                        data-courtid="@court.Id" 
-                                                        data-courtname="@court.Name" 
-                                                        data-price="@court.PricePerHour"
-                                                        data-priceformatted="@BadmintonCourtBooking.Models.MockData.FormatVND(court.PricePerHour)"
-                                                        data-time="@slot" 
-                                                        data-nexttime="@nextSlot"
-                                                        style="display: block; width: 100%;">Trống</button>
-                                            }
+                                            <button class="@btnClass"
+                                                    @(isDisabled ? "disabled" : "")
+                                                    data-courtid="@court.Id" 
+                                                    data-courtname="@court.Name" 
+                                                    data-price="@court.PricePerHour"
+                                                    data-priceformatted="@BadmintonCourtBooking.Models.MockData.FormatVND(court.PricePerHour)"
+                                                    data-time="@slot" 
+                                                    data-nexttime="@nextSlot"
+                                                    style="display: block; width: 100%;">@btnText</button>
                                         </td>
                                     }
                                 </tr>
@@ -251,7 +244,7 @@
     </div>
 
     <!-- Mobile Sticky Booking Bar -->
-    <div class="mobile-booking-bar" id="mobile-booking-bar" style="display: none;">
+    <div class="mobile-booking-bar" id="mobile-booking-bar">
         <div class="flex-between w-full gap-3">
             <div style="min-width: 0;">
                 <div class="text-xs text-muted truncate" id="mobile-booking-summary">-</div>

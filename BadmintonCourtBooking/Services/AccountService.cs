@@ -93,7 +93,7 @@ public class AccountService(ApplicationDbContext context, IPasswordHasher<AppUse
 
         return OperationResult<AppUserEntity>.Success(
             user,
-            "Tạo tài khoản thành công! Chào mừng bạn đến với CourtBook.");
+            "Tạo tài khoản thành công! Chào mừng bạn đến với Đặt Sân Cầu Lông.");
     }
 
     public Task<AppUserEntity?> FindByIdAsync(string userId, CancellationToken cancellationToken = default) =>
@@ -217,5 +217,52 @@ public class AccountService(ApplicationDbContext context, IPasswordHasher<AppUse
         await _context.SaveChangesAsync(cancellationToken);
 
         return OperationResult.Success("Đã cập nhật tùy chọn nhận thông báo.");
+    }
+
+    public async Task<OperationResult<AppUserEntity>> GetOrCreateExternalUserAsync(string email, string fullName, CancellationToken cancellationToken = default)
+    {
+        var normalizedEmail = AccountValueNormalizer.NormalizeEmail(email);
+
+        var user = await _context.Users.FirstOrDefaultAsync(
+            item => item.NormalizedEmail == normalizedEmail,
+            cancellationToken);
+
+        if (user is not null)
+        {
+            if (!user.IsActive)
+            {
+                return OperationResult<AppUserEntity>.Fail("Tài khoản của bạn đang bị khóa. Vui lòng liên hệ quản trị viên.");
+            }
+
+            user.LastSignInAt = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync(cancellationToken);
+            return OperationResult<AppUserEntity>.Success(user, "Đăng nhập thành công.");
+        }
+
+        // Create new user as Player
+        var newUser = new AppUserEntity
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            FullName = fullName.Trim(),
+            Email = email.Trim(),
+            NormalizedEmail = normalizedEmail,
+            PhoneNumber = string.Empty,
+            NormalizedPhoneNumber = string.Empty,
+            Role = AppRoles.Player,
+            PlayArea = "Chưa cập nhật",
+            JoinedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            IsPhoneVerified = false,
+            IsActive = true
+        };
+
+        // Set a random complex password hash
+        newUser.PasswordHash = _passwordHasher.HashPassword(newUser, Guid.NewGuid().ToString("N"));
+
+        _context.Users.Add(newUser);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return OperationResult<AppUserEntity>.Success(newUser, "Tạo tài khoản người chơi mới thành công.");
     }
 }

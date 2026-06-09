@@ -15,13 +15,33 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    })
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
     {
         options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Account/AccessDenied";
         options.Cookie.Name = "CourtBook.Auth";
         options.SlidingExpiration = true;
+    })
+    .AddCookie("ExternalCookie", options =>
+    {
+        options.Cookie.Name = "CourtBook.External";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+    })
+    .AddGoogle(options =>
+    {
+        options.SignInScheme = "ExternalCookie";
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "mock-google-id";
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "mock-google-secret";
+    })
+    .AddFacebook(options =>
+    {
+        options.SignInScheme = "ExternalCookie";
+        options.AppId = builder.Configuration["Authentication:Facebook:AppId"] ?? "mock-facebook-id";
+        options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"] ?? "mock-facebook-secret";
     });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<ApplicationDbContextSeeder>();

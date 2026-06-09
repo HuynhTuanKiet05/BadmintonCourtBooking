@@ -56,7 +56,7 @@ public class AdminDashboardService(ApplicationDbContext context, ICurrentUserSer
 
         return new AdminDashboardViewModel
         {
-            AdminName = _currentUserService.User?.FullName ?? "Quản trị viên CourtBook",
+            AdminName = _currentUserService.User?.FullName ?? "Quản trị viên Đặt Sân Cầu Lông",
             TotalUsers = users.Count,
             TotalPlayers = users.Count(user => user.Role == AppRoles.Player),
             LockedUsers = users.Count(user => !user.IsActive),
@@ -162,7 +162,7 @@ public class AdminDashboardService(ApplicationDbContext context, ICurrentUserSer
 
         return new AdminVenueManagementViewModel
         {
-            AdminName = _currentUserService.User?.FullName ?? "Quản trị viên CourtBook",
+            AdminName = _currentUserService.User?.FullName ?? "Quản trị viên Đặt Sân Cầu Lông",
             SelectedVenueId = resolvedSelectedVenueId,
             Venues = mappedVenues
         };
