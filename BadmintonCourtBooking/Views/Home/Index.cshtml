@@ -16,17 +16,14 @@
                 <i data-lucide="sparkles" style="width:14px;height:14px;margin-right:4px"></i> Nền tảng đặt sân cầu lông
             </span>
             <h1 class="hero-title">
-                Đặt sân cầu lông dễ hơn,<br />quản lý sân gọn hơn.
+                Đặt sân cầu lông dễ hơn,<br />chọn giờ chơi nhanh hơn.
             </h1>
             <p class="hero-desc">
-                CourtBook giúp người chơi tìm khung giờ trống chỉ trong vài chạm và giúp chủ sân tiếp cận khách hàng online mà không cần đầu tư hệ thống riêng.
+                CourtBook giúp người chơi tìm khung giờ trống, xem thông tin sân rõ ràng và đặt lịch trực tuyến chỉ trong vài chạm.
             </p>
             <div class="hero-cta">
                 <a asp-controller="Venue" asp-action="Index" class="btn btn-primary btn-lg">
                     <i data-lucide="search" style="width:18px;height:18px"></i> Tìm sân ngay
-                </a>
-                <a asp-controller="Owner" asp-action="Dashboard" class="btn btn-outline btn-lg" style="border-color:var(--cb-accent);color:var(--cb-accent-text);background-color:var(--cb-accent-light)">
-                    Đăng ký làm chủ sân
                 </a>
             </div>
             <div class="hero-stats">
@@ -106,68 +103,6 @@
                 <div class="text-xs text-muted" style="margin-bottom: 0.25rem;">Bước 3</div>
                 <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem;">Xác nhận & Đến chơi</h3>
                 <p class="text-sm text-secondary">Thanh toán giữ chỗ, nhận mã đặt sân tức thì và đến sân thi đấu đúng lịch hẹn.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- For Owners Section -->
-<section class="owner-section">
-    <div class="container owner-content grid-2 items-center">
-        <div>
-            <span class="badge badge-amber mb-3">Dành cho chủ sân</span>
-            <h2 class="text-slate-900 text-2xl" style="font-size: 1.75rem; font-weight: 700; line-height: 1.3;">
-                Quản lý cụm sân, theo dõi booking, tăng khách online.
-            </h2>
-            <p class="text-secondary mt-3" style="font-size:1rem; margin-bottom: 1.5rem;">
-                Bảng điều khiển gọn nhẹ dành riêng cho chủ sân không rành công nghệ. Bạn vẫn tiếp khách trực tiếp bình thường, nhưng việc quản lý sẽ nhàn hạ và chính xác hơn gấp bội.
-            </p>
-            <div class="grid-2 gap-3" style="margin-bottom: 1.75rem;">
-                <div class="flex items-center gap-2 text-sm text-secondary"><i data-lucide="check" style="width:16px;height:16px;color:var(--cb-primary)"></i> Quản lý nhiều sân con</div>
-                <div class="flex items-center gap-2 text-sm text-secondary"><i data-lucide="check" style="width:16px;height:16px;color:var(--cb-primary)"></i> Duyệt lịch trong 1 chạm</div>
-                <div class="flex items-center gap-2 text-sm text-secondary"><i data-lucide="check" style="width:16px;height:16px;color:var(--cb-primary)"></i> Thống kê doanh thu tuần</div>
-                <div class="flex items-center gap-2 text-sm text-secondary"><i data-lucide="check" style="width:16px;height:16px;color:var(--cb-primary)"></i> Tiếp cận hàng ngàn khách online</div>
-            </div>
-            <a asp-controller="Owner" asp-action="Dashboard" class="btn btn-primary btn-lg">
-                Vào trang quản lý <i data-lucide="arrow-right" style="width:16px;height:16px"></i>
-            </a>
-        </div>
-
-        <!-- Owner Mock Dashboard Card -->
-        <div class="card" style="padding: 1.25rem; border-color: var(--cb-border); background-color: white; box-shadow: var(--cb-card-shadow);">
-            <div class="flex-between" style="margin-bottom: 1rem;">
-                <div class="font-semibold">Doanh thu hôm nay</div>
-                <span class="badge badge-slate">20/05/2026</span>
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
-                <div style="background-color: var(--cb-section-alt); border: 1px solid var(--cb-border); border-radius: var(--cb-radius); padding: 0.5rem; text-align: center;">
-                    <div class="text-xs text-muted">Bookings</div>
-                    <div class="font-semibold text-slate-900" style="font-size:1.25rem; margin-top:0.25rem">23</div>
-                </div>
-                <div style="background-color: var(--cb-section-alt); border: 1px solid var(--cb-border); border-radius: var(--cb-radius); padding: 0.5rem; text-align: center;">
-                    <div class="text-xs text-muted">Chờ duyệt</div>
-                    <div class="font-semibold" style="font-size:1.25rem; margin-top:0.25rem; color: #d97706">4</div>
-                </div>
-                <div style="background-color: var(--cb-section-alt); border: 1px solid var(--cb-border); border-radius: var(--cb-radius); padding: 0.5rem; text-align: center;">
-                    <div class="text-xs text-muted">Doanh thu</div>
-                    <div class="font-semibold" style="font-size:1.25rem; margin-top:0.25rem; color: var(--cb-primary)">2.4tr</div>
-                </div>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <div class="flex-between text-sm" style="border: 1px solid var(--cb-border-light); border-radius: var(--cb-radius); padding: 0.5rem 0.75rem;">
-                    <div>
-                        <div class="font-medium">Sân VIP · 19:00</div>
-                        <div class="text-xs text-muted">Nguyễn Minh Khoa</div>
-                    </div>
-                    <span class="status-badge status-pending">Chờ duyệt</span>
-                </div>
-                <div class="flex-between text-sm" style="border: 1px solid var(--cb-border-light); border-radius: var(--cb-radius); padding: 0.5rem 0.75rem;">
-                    <div>
-                        <div class="font-medium">Sân 2 · 20:00</div>
-                        <div class="text-xs text-muted">Lê Quốc Bảo</div>
-                    </div>
-                    <span class="status-badge status-confirmed">Đã duyệt</span>
-                </div>
             </div>
         </div>
     </div>

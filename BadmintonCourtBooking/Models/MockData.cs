@@ -94,7 +94,7 @@ public static class MockData
             Reviews = 305,
             ResponseFast = true,
             HasSlotsToday = true,
-            Highlight = "Chủ sân phản hồi nhanh",
+            Highlight = "Phản hồi nhanh",
             Description = "Trung tâm thể thao cao cấp tại Quận 10 với sân thi đấu đạt chuẩn quốc tế và dịch vụ chuyên nghiệp.",
             Courts = new List<Court>
             {
@@ -207,115 +207,6 @@ public static class MockData
         }
     };
 
-    // ── Owner Bookings ──
-    public static readonly List<OwnerBooking> OwnerBookings = new()
-    {
-        new OwnerBooking
-        {
-            Id = "ob1",
-            Customer = "Nguyễn Minh Khoa",
-            Phone = "0905***221",
-            Court = "Sân 1",
-            Time = "Hôm nay · 18:00",
-            Total = 90_000,
-            Status = BookingStatus.Pending
-        },
-        new OwnerBooking
-        {
-            Id = "ob2",
-            Customer = "Trần Phương Linh",
-            Phone = "0987***104",
-            Court = "Sân VIP",
-            Time = "Hôm nay · 19:00",
-            Total = 150_000,
-            Status = BookingStatus.Confirmed
-        },
-        new OwnerBooking
-        {
-            Id = "ob3",
-            Customer = "Lê Quốc Bảo",
-            Phone = "0912***876",
-            Court = "Sân 2",
-            Time = "Hôm nay · 20:00",
-            Total = 90_000,
-            Status = BookingStatus.Pending
-        },
-        new OwnerBooking
-        {
-            Id = "ob4",
-            Customer = "Phạm Hồng Nhung",
-            Phone = "0934***012",
-            Court = "Sân 3",
-            Time = "Mai · 07:00",
-            Total = 110_000,
-            Status = BookingStatus.Confirmed
-        },
-        new OwnerBooking
-        {
-            Id = "ob5",
-            Customer = "Đặng Tuấn Anh",
-            Phone = "0976***455",
-            Court = "Sân 1",
-            Time = "Mai · 17:00",
-            Total = 90_000,
-            Status = BookingStatus.Cancelled
-        }
-    };
-
-    // ── Revenue Data ──
-    public static readonly List<RevenueDataPoint> RevenueData = new()
-    {
-        new RevenueDataPoint { Day = "T2", Value = 1.8 },
-        new RevenueDataPoint { Day = "T3", Value = 2.1 },
-        new RevenueDataPoint { Day = "T4", Value = 2.6 },
-        new RevenueDataPoint { Day = "T5", Value = 2.2 },
-        new RevenueDataPoint { Day = "T6", Value = 3.4 },
-        new RevenueDataPoint { Day = "T7", Value = 4.1 },
-        new RevenueDataPoint { Day = "CN", Value = 3.7 }
-    };
-
-    // ── Pending Venues (Admin) ──
-    public static readonly List<PendingVenue> PendingVenues = new()
-    {
-        new PendingVenue
-        {
-            Id = "pv1",
-            Name = "Sân Cầu Lông An Phú",
-            Owner = "Trần Văn Hùng",
-            District = "Quận 2",
-            Courts = 4,
-            Submitted = "18/05/2026"
-        },
-        new PendingVenue
-        {
-            Id = "pv2",
-            Name = "Bình Tân Sport Hub",
-            Owner = "Lê Thị Mai",
-            District = "Bình Tân",
-            Courts = 6,
-            Submitted = "17/05/2026"
-        },
-        new PendingVenue
-        {
-            Id = "pv3",
-            Name = "Sân Hoàng Hoa Thám",
-            Owner = "Phạm Quốc Việt",
-            District = "Tân Bình",
-            Courts = 3,
-            Submitted = "16/05/2026"
-        }
-    };
-
-    // ── Recent Users (Admin) ──
-    public static readonly List<RecentUser> RecentUsers = new()
-    {
-        new RecentUser { Name = "Nguyễn Minh Khoa", JoinDate = "20/05/2026", Role = "Khách hàng" },
-        new RecentUser { Name = "Trần Phương Linh", JoinDate = "19/05/2026", Role = "Chủ sân" },
-        new RecentUser { Name = "Lê Quốc Bảo", JoinDate = "18/05/2026", Role = "Khách hàng" },
-        new RecentUser { Name = "Phạm Hồng Nhung", JoinDate = "17/05/2026", Role = "Khách hàng" },
-        new RecentUser { Name = "Đặng Tuấn Anh", JoinDate = "16/05/2026", Role = "Chủ sân" }
-    };
-
     // ── Helpers ──
 
     /// <summary>
@@ -380,35 +271,4 @@ public static class MockData
         }
     }
 
-    /// <summary>
-    /// Returns a populated DashboardViewModel for the owner dashboard.
-    /// </summary>
-    public static DashboardViewModel GetDashboardViewModel()
-    {
-        return new DashboardViewModel
-        {
-            TodayBookings = 12,
-            PendingCount = 3,
-            Revenue = 2_340_000,
-            ActiveCourts = "4/4",
-            RevenueData = RevenueData,
-            RecentBookings = OwnerBookings
-        };
-    }
-
-    /// <summary>
-    /// Returns a populated AdminViewModel for the admin dashboard.
-    /// </summary>
-    public static AdminViewModel GetAdminViewModel()
-    {
-        return new AdminViewModel
-        {
-            TotalOwners = 24,
-            TotalCustomers = 1_250,
-            TotalVenues = 18,
-            MonthlyBookings = 3_420,
-            PendingVenues = PendingVenues,
-            RecentUsers = RecentUsers
-        };
-    }
 }

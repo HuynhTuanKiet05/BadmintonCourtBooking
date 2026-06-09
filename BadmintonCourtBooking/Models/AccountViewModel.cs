@@ -19,8 +19,8 @@ namespace BadmintonCourtBooking.Models
         public bool RememberMe { get; set; } = true;
 
         [Required(ErrorMessage = "Vui lòng chọn vai trò đăng nhập.")]
-        [RegularExpression("^(player|owner)$", ErrorMessage = "Vai trò đăng nhập không hợp lệ.")]
-        public string Role { get; set; } = "player"; // "player" hoặc "owner"
+        [RegularExpression("^(player)$", ErrorMessage = "Vai trò đăng nhập không hợp lệ.")]
+        public string Role { get; set; } = "player";
 
         public string? ReturnUrl { get; set; }
     }
@@ -58,8 +58,8 @@ namespace BadmintonCourtBooking.Models
         public string ConfirmPassword { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng chọn vai trò tài khoản.")]
-        [RegularExpression("^(player|owner)$", ErrorMessage = "Vai trò đăng ký không hợp lệ.")]
-        public string Role { get; set; } = "player"; // "player" hoặc "owner"
+        [RegularExpression("^(player)$", ErrorMessage = "Vai trò đăng ký không hợp lệ.")]
+        public string Role { get; set; } = "player";
 
         public string? ReturnUrl { get; set; }
     }

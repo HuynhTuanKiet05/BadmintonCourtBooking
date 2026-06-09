@@ -351,10 +351,10 @@
                     </div>
                     <div>
                         <h2 class="display-6 fw-normal mb-3" style="line-height: 1.25;">
-                            Đặt sân cầu lông trong vài chạm.<br />Quản lý cụm sân gọn gàng mỗi ngày.
+                            Đặt sân cầu lông trong vài chạm.<br />Chọn giờ chơi gọn gàng mỗi ngày.
                         </h2>
                         <p class="text-white-50 fs-6 mb-4" style="max-width: 460px;">
-                            Hơn 12.000 người chơi và 180 chủ sân đang dùng CourtBook để kết nối nhanh hơn, minh bạch hơn — không còn cảnh gọi điện hỏi sân trống.
+                            Hơn 12.000 người chơi đang dùng CourtBook để tìm sân nhanh hơn, minh bạch hơn — không còn cảnh gọi điện hỏi sân trống.
                         </p>
                         <div class="row g-3" style="max-width: 460px;">
                             <div class="col-4">
@@ -388,25 +388,14 @@
                 <div class="auth-card">
                     <!-- Role Selector -->
                     <div class="row g-2 mb-4">
-                        <div class="col-6">
-                            <button type="button" class="role-btn @(Model.Role == "player" ? "active" : "")" onclick="selectRole('player')">
+                        <div class="col-12">
+                            <button type="button" class="role-btn active" onclick="selectRole('player')">
                                 <div class="role-icon-box">
                                     <i data-lucide="users" style="width: 1rem; height: 1rem;"></i>
                                 </div>
                                 <div class="leading-tight">
                                     <div class="fw-semibold text-slate-900" style="font-size: 0.875rem;">Người chơi</div>
                                     <div class="text-slate-500" style="font-size: 0.75rem;">Tìm & đặt sân</div>
-                                </div>
-                            </button>
-                        </div>
-                        <div class="col-6">
-                            <button type="button" class="role-btn @(Model.Role == "owner" ? "active" : "")" onclick="selectRole('owner')">
-                                <div class="role-icon-box">
-                                    <i data-lucide="store" style="width: 1rem; height: 1rem;"></i>
-                                </div>
-                                <div class="leading-tight">
-                                    <div class="fw-semibold text-slate-900" style="font-size: 0.875rem;">Chủ sân</div>
-                                    <div class="text-slate-500" style="font-size: 0.75rem;">Quản lý cụm sân</div>
                                 </div>
                             </button>
                         </div>
@@ -429,12 +418,12 @@
                             <div class="auth-slide" id="login-slide">
                                 <div class="mb-4">
                                     <h3 class="fw-bold text-slate-900 mb-1">Đăng nhập CourtBook</h3>
-                                    <p class="text-slate-500" style="font-size: 0.875rem;">Tiếp tục đặt sân hoặc quản lý cụm sân của bạn.</p>
+                                    <p class="text-slate-500" style="font-size: 0.875rem;">Tiếp tục tìm sân, đặt lịch và quản lý lịch chơi của bạn.</p>
                                 </div>
 
                                 <form action="/Account/Login" method="post" class="needs-validation">
                                     @Html.AntiForgeryToken()
-                                    <input type="hidden" name="Role" class="role-input" value="@Model.Role" />
+                                    <input type="hidden" name="Role" class="role-input" value="player" />
                                     <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
 
                                     <!-- Email/Phone Field -->
@@ -506,7 +495,7 @@
 
                                     <p class="text-center text-slate-600 mb-0" style="font-size: 0.875rem;">
                                         Chưa có tài khoản?
-                                        <a asp-action="Register" asp-route-role="@Model.Role" asp-route-returnUrl="@Model.ReturnUrl" data-auth-target="register" class="text-emerald-700 fw-semibold text-decoration-none auth-footer-link" onclick="handleAuthTabSwitch(event, 'register')">Đăng ký mới</a>
+                                        <a asp-action="Register" asp-route-role="player" asp-route-returnUrl="@Model.ReturnUrl" data-auth-target="register" class="text-emerald-700 fw-semibold text-decoration-none auth-footer-link" onclick="handleAuthTabSwitch(event, 'register')">Đăng ký mới</a>
                                     </p>
                                 </form>
                             </div>
@@ -515,12 +504,12 @@
                             <div class="auth-slide active" id="register-slide">
                                 <div class="mb-4">
                                     <h3 class="fw-bold text-slate-900 mb-1">Tạo tài khoản mới</h3>
-                                    <p class="text-slate-500" style="font-size: 0.875rem;">Chọn vai trò phù hợp để bắt đầu trong vài bước.</p>
+                                    <p class="text-slate-500" style="font-size: 0.875rem;">Tạo tài khoản người chơi để đặt sân và theo dõi lịch chơi.</p>
                                 </div>
 
                                 <form asp-action="Register" method="post" class="needs-validation">
                                     @Html.AntiForgeryToken()
-                                    <input type="hidden" asp-for="Role" class="role-input" id="RoleInput" />
+                                    <input type="hidden" name="Role" class="role-input" id="RoleInput" value="player" />
                                     <input type="hidden" asp-for="ReturnUrl" />
 
                                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3" style="font-size: 0.875rem;"></div>
@@ -590,14 +579,6 @@
                                         <span asp-validation-for="ConfirmPassword" class="text-danger" style="font-size: 0.75rem;"></span>
                                     </div>
 
-                                    <!-- Owner Warning Alert -->
-                                    <div id="owner-warning-alert" class="alert-amber mb-3" style="display: @(Model.Role == "owner" ? "block" : "none");">
-                                        <div class="d-flex gap-2">
-                                            <i data-lucide="alert-circle" style="width: 1rem; height: 1rem; flex-shrink: 0; color: #b45309;"></i>
-                                            <span>Bạn có thể đăng nhập ngay sau khi tạo tài khoản. Các cụm sân mới vẫn cần admin duyệt trước khi hiển thị công khai.</span>
-                                        </div>
-                                    </div>
-
                                     <!-- Terms and Conditions Checkbox -->
                                     <div class="form-check p-0 d-flex gap-2 mb-4" style="font-size: 0.875rem;">
                                         <input class="form-check-input m-0 float-none cursor-pointer flex-shrink-0" type="checkbox" id="reg-terms" style="border-radius: 0.25rem; margin-top: 2px !important;" required />
@@ -608,7 +589,7 @@
 
                                     <!-- Submit Button -->
                                     <button type="submit" class="btn btn-emerald w-100 py-2 mb-3" id="register-submit-btn">
-                                        @(Model.Role == "owner" ? "Đăng ký chủ sân" : "Tạo tài khoản")
+                                        Tạo tài khoản
                                     </button>
 
                                     <!-- Divider -->
@@ -643,7 +624,7 @@
 
                                     <p class="text-center text-slate-600 mb-0" style="font-size: 0.875rem;">
                                         Đã có tài khoản?
-                                        <a asp-action="Login" asp-route-role="@Model.Role" asp-route-returnUrl="@Model.ReturnUrl" data-auth-target="login" class="text-emerald-700 fw-semibold text-decoration-none auth-footer-link" onclick="handleAuthTabSwitch(event, 'login')">Đăng nhập ngay</a>
+                                        <a asp-action="Login" asp-route-role="player" asp-route-returnUrl="@Model.ReturnUrl" data-auth-target="login" class="text-emerald-700 fw-semibold text-decoration-none auth-footer-link" onclick="handleAuthTabSwitch(event, 'login')">Đăng nhập ngay</a>
                                     </p>
                                 </form>
                             </div>
@@ -671,7 +652,7 @@
 
         function buildAuthUrl(target, role) {
             const url = new URL(target === 'login' ? '/Account/Login' : '/Account/Register', window.location.origin);
-            url.searchParams.set('role', role);
+            url.searchParams.set('role', 'player');
 
             const returnUrl = getReturnUrlValue();
             if (returnUrl) {
@@ -805,36 +786,21 @@
 
         function selectRole(role, options = {}) {
             const { syncDemo = true } = options;
+            role = 'player';
 
-            // Cập nhật giá trị input hidden cho tất cả form trong DOM
             document.querySelectorAll('.role-input').forEach(input => {
                 input.value = role;
             });
 
-            // Xóa class active ở cả 2 nút vai trò
             document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
-
-            // Kích hoạt class active cho nút tương ứng
             const buttons = document.querySelectorAll('.role-btn');
-            if (role === 'player') {
+            if (buttons[0]) {
                 buttons[0].classList.add('active');
-            } else {
-                buttons[1].classList.add('active');
             }
 
-            // Đồng bộ cảnh báo chủ sân & chữ trên nút submit của trang Đăng ký
-            const warningAlert = document.getElementById('owner-warning-alert');
             const submitBtn = document.getElementById('register-submit-btn');
-            
-            if (role === 'owner') {
-                if (warningAlert) warningAlert.style.display = 'block';
-                if (submitBtn) submitBtn.innerText = 'Đăng ký chủ sân';
-            } else {
-                if (warningAlert) warningAlert.style.display = 'none';
-                if (submitBtn) submitBtn.innerText = 'Tạo tài khoản';
-            }
+            if (submitBtn) submitBtn.innerText = 'Tạo tài khoản';
 
-            // Đồng bộ tham số role trong các link chuyển hướng chân trang
             document.querySelectorAll('.auth-footer-link').forEach(link => {
                 try {
                     const target = link.dataset.authTarget || 'login';
@@ -867,8 +833,7 @@
         // Lắng nghe nút Back/Forward của trình duyệt để chuyển đổi tab mượt mà
         window.addEventListener('popstate', () => {
             const path = window.location.pathname.toLowerCase();
-            const urlParams = new URLSearchParams(window.location.search);
-            const role = urlParams.get('role') || 'player';
+            const role = 'player';
             
             if (role) {
                 // Tắt hiệu ứng transition chiều cao tạm thời để tránh giật khi chuyển nút cứng trình duyệt
@@ -886,7 +851,7 @@
         });
 
         document.addEventListener("DOMContentLoaded", function() {
-            const role = document.getElementById('RoleInput')?.value || 'player';
+            const role = 'player';
 
             bindDemoAccountButtons();
             syncDefaultDemoCredentials(role);

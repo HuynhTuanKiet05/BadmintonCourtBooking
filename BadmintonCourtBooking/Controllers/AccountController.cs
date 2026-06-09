@@ -262,7 +262,6 @@ namespace BadmintonCourtBooking.Controllers
             var resolvedRole = role ?? _currentUserService.User?.Role;
             return resolvedRole switch
             {
-                AppRoles.Owner => RedirectToAction("Dashboard", "Owner"),
                 AppRoles.Admin => RedirectToAction("Index", "Admin"),
                 _ => RedirectToAction("Index", "Home")
             };

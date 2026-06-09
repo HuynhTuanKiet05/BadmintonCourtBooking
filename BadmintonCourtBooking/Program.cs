@@ -31,13 +31,15 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IVenueCatalogService, VenueCatalogService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
-builder.Services.AddScoped<IOwnerDashboardService, OwnerDashboardService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.MigrateAsync();
+
     var seeder = scope.ServiceProvider.GetRequiredService<ApplicationDbContextSeeder>();
     await seeder.SeedAsync();
 }

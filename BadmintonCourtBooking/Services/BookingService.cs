@@ -105,7 +105,7 @@ public class BookingService(ApplicationDbContext context, ICurrentUserService cu
             return OperationResult.Fail("Khung giờ này vừa được giữ bởi người chơi khác. Vui lòng chọn slot khác.");
         }
 
-        return OperationResult.Success($"Đã gửi yêu cầu đặt {court.Name} tại {court.Venue.Name}. Chủ sân sẽ xác nhận trong ít phút.");
+        return OperationResult.Success($"Đã gửi yêu cầu đặt {court.Name} tại {court.Venue.Name}. Quản trị viên sẽ xác nhận trong ít phút.");
     }
 
     public async Task<OperationResult> CancelBookingAsync(string id, CancellationToken cancellationToken = default)

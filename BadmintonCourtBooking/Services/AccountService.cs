@@ -80,7 +80,7 @@ public class AccountService(ApplicationDbContext context, IPasswordHasher<AppUse
             PhoneNumber = model.Phone.Trim(),
             NormalizedPhoneNumber = normalizedPhone,
             Role = role,
-            PlayArea = role == AppRoles.Owner ? "TP.HCM" : "Quận 11, TP.HCM",
+            PlayArea = "Quận 11, TP.HCM",
             JoinedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             IsPhoneVerified = false
@@ -93,9 +93,7 @@ public class AccountService(ApplicationDbContext context, IPasswordHasher<AppUse
 
         return OperationResult<AppUserEntity>.Success(
             user,
-            role == AppRoles.Owner
-                ? "Đã tạo tài khoản chủ sân thành công."
-                : "Tạo tài khoản thành công! Chào mừng bạn đến với CourtBook.");
+            "Tạo tài khoản thành công! Chào mừng bạn đến với CourtBook.");
     }
 
     public Task<AppUserEntity?> FindByIdAsync(string userId, CancellationToken cancellationToken = default) =>
@@ -172,17 +170,6 @@ public class AccountService(ApplicationDbContext context, IPasswordHasher<AppUse
         user.PlayArea = model.PlayArea.Trim();
         user.IsPhoneVerified = !string.IsNullOrWhiteSpace(user.PhoneNumber);
         user.UpdatedAt = DateTime.UtcNow;
-
-        if (user.Role == AppRoles.Owner)
-        {
-            var venues = await _context.Venues.Where(item => item.OwnerUserId == userId).ToListAsync(cancellationToken);
-            foreach (var venue in venues)
-            {
-                venue.OwnerName = user.FullName;
-                venue.OwnerPhone = user.PhoneNumber;
-                venue.UpdatedAt = DateTime.UtcNow;
-            }
-        }
 
         await _context.SaveChangesAsync(cancellationToken);
 

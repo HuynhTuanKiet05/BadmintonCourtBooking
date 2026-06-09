@@ -32,6 +32,14 @@
                 <p style="margin:0.5rem 0 0 0; color:rgba(255,255,255,0.82); max-width:640px;">
                     Xin chào @Model.AdminName. Trang này gom đủ 5 mục tiêu Phase 6: duyệt venue, khóa/mở tài khoản, kiểm soát public site, xem tổng quan user-venue-booking và đối chiếu số liệu toàn hệ thống.
                 </p>
+                <div style="display:flex; gap:0.65rem; flex-wrap:wrap; margin-top:1rem;">
+                    <a asp-controller="Admin" asp-action="Venues" class="btn btn-primary">
+                        <i data-lucide="building-2" style="width:16px;height:16px"></i> Quáº£n lÃ½ cá»¥m sÃ¢n
+                    </a>
+                    <a href="#bookings" class="btn btn-outline" style="border-color:rgba(255,255,255,0.45); color:white; background:rgba(255,255,255,0.08);">
+                        <i data-lucide="receipt" style="width:16px;height:16px"></i> Xá»­ lÃ½ booking
+                    </a>
+                </div>
             </div>
             <div style="display:grid; gap:0.75rem; min-width:260px;">
                 <div style="padding:0.875rem 1rem; border-radius:0.875rem; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.14);">
@@ -46,7 +54,6 @@
         </div>
 
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:1rem;">
-            <span style="padding:0.45rem 0.75rem; border-radius:999px; background:rgba(255,255,255,0.14); font-size:0.75rem;">@Model.TotalOwners chủ sân</span>
             <span style="padding:0.45rem 0.75rem; border-radius:999px; background:rgba(255,255,255,0.14); font-size:0.75rem;">@Model.TotalPlayers người chơi</span>
             <span style="padding:0.45rem 0.75rem; border-radius:999px; background:rgba(255,255,255,0.14); font-size:0.75rem;">@Model.PendingBookings booking đang chờ</span>
             <span style="padding:0.45rem 0.75rem; border-radius:999px; background:rgba(255,255,255,0.14); font-size:0.75rem;">@Model.LockedUsers tài khoản bị khóa</span>
@@ -64,7 +71,7 @@
                     <i data-lucide="users" style="width:18px;height:18px"></i>
                 </div>
             </div>
-            <div style="margin-top:0.65rem; font-size:0.76rem; color:var(--cb-text-secondary);">@Model.TotalOwners chủ sân · @Model.TotalPlayers người chơi</div>
+            <div style="margin-top:0.65rem; font-size:0.76rem; color:var(--cb-text-secondary);">@Model.TotalPlayers người chơi</div>
         </div>
 
         <div class="card" style="border-color: var(--cb-border); background-color:white; padding:1.2rem;">
@@ -103,7 +110,7 @@
                     <i data-lucide="calendar-check" style="width:18px;height:18px"></i>
                 </div>
             </div>
-            <div style="margin-top:0.65rem; font-size:0.76rem; color:var(--cb-text-secondary);">@Model.PendingBookings booking đang đợi owner phản hồi</div>
+            <div style="margin-top:0.65rem; font-size:0.76rem; color:var(--cb-text-secondary);">@Model.PendingBookings booking đang đợi admin xử lý</div>
         </div>
 
         <div class="card" style="border-color: var(--cb-border); background-color:white; padding:1.2rem;">
@@ -129,7 +136,7 @@
                     <i data-lucide="layout-grid" style="width:18px;height:18px"></i>
                 </div>
             </div>
-            <div style="margin-top:0.65rem; font-size:0.76rem; color:var(--cb-text-secondary);">Theo toàn bộ venue đã được seed / owner tạo thêm</div>
+            <div style="margin-top:0.65rem; font-size:0.76rem; color:var(--cb-text-secondary);">Theo toàn bộ venue đang có trong hệ thống</div>
         </div>
     </section>
 
@@ -155,7 +162,7 @@
                 </div>
                 <h3 style="font-size:1rem; margin:0;">Không còn hồ sơ tồn</h3>
                 <p style="margin:0.35rem auto 0; max-width:420px; color:var(--cb-text-secondary); font-size:0.82rem;">
-                    Toàn bộ venue đã được xử lý. Khi owner tạo venue mới hoặc chỉnh lại hồ sơ bị từ chối, thẻ duyệt sẽ xuất hiện lại ở khu vực này.
+                    Toàn bộ venue đã được xử lý. Admin có thể tạo hoặc chỉnh sửa venue tại trang quản lý cụm sân.
                 </p>
             </div>
         }
@@ -168,7 +175,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem;">
                             <div>
                                 <h3 style="font-size:1rem; font-weight:600; margin:0;">@venue.Name</h3>
-                                <div style="font-size:0.82rem; color:var(--cb-text-secondary); margin-top:0.2rem;">@venue.OwnerName · @venue.OwnerPhone</div>
+                                <div style="font-size:0.82rem; color:var(--cb-text-secondary); margin-top:0.2rem;">@venue.ContactName · @venue.ContactPhone</div>
                             </div>
                             <span style="@(PillStyles("amber"))">Chờ duyệt</span>
                         </div>
@@ -212,7 +219,7 @@
                     Quản lý tài khoản người dùng
                 </h2>
                 <p style="margin:0.25rem 0 0 0; color:var(--cb-text-secondary); font-size:0.82rem;">
-                    Admin có thể khóa hoặc mở lại player / owner. Tài khoản bị khóa sẽ không thể đăng nhập hoặc tiếp tục thao tác.
+                    Admin có thể khóa hoặc mở lại player. Tài khoản bị khóa sẽ không thể đăng nhập hoặc tiếp tục thao tác.
                 </p>
             </div>
             <span style="@(ChipStyles(Model.LockedUsers > 0 ? "rose" : "emerald"))">
@@ -298,7 +305,7 @@
                 <thead>
                     <tr>
                         <th>Venue</th>
-                        <th>Chủ sân</th>
+                        <th>Liên hệ</th>
                         <th>Sân con</th>
                         <th>Booking chờ</th>
                         <th>Trạng thái</th>
@@ -315,7 +322,7 @@
                                 <div style="font-size:0.82rem; color:var(--cb-text-secondary);">@venue.Address, @venue.District</div>
                                 <div style="font-size:0.78rem; color:var(--cb-text-muted);">Giờ mở cửa: @venue.OpenHours</div>
                             </td>
-                            <td style="font-size:0.82rem;">@venue.OwnerName</td>
+                            <td style="font-size:0.82rem;">@venue.ContactName</td>
                             <td style="font-size:0.82rem;">@venue.ActiveCourtCount / @venue.TotalCourtCount đang mở</td>
                             <td style="font-size:0.82rem;">@venue.PendingBookingCount</td>
                             <td>
@@ -371,10 +378,11 @@
                     <tr>
                         <th>Khách đặt</th>
                         <th>Venue / sân</th>
-                        <th>Owner</th>
+                        <th>Liên hệ sân</th>
                         <th>Thời gian</th>
                         <th>Tổng tiền</th>
                         <th>Trạng thái</th>
+                        <th style="text-align:right;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -389,11 +397,30 @@
                                 <div style="font-weight:600;">@booking.VenueName</div>
                                 <div style="font-size:0.82rem; color:var(--cb-text-secondary);">@booking.CourtName</div>
                             </td>
-                            <td style="font-size:0.82rem;">@booking.OwnerName</td>
+                            <td style="font-size:0.82rem;">@booking.ContactName</td>
                             <td style="font-size:0.82rem;">@booking.TimeLabel</td>
                             <td style="font-weight:600;">@booking.TotalLabel</td>
                             <td>
                                 <span style="@(PillStyles(booking.StatusTone))">@booking.StatusLabel</span>
+                            </td>
+                            <td style="text-align:right;">
+                                @if (booking.CanReview)
+                                {
+                                    <div style="display:inline-flex; gap:0.4rem; justify-content:flex-end; flex-wrap:wrap;">
+                                        <form asp-controller="Admin" asp-action="RejectBooking" asp-route-id="@booking.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline btn-sm" style="color:#be123c; border-color:#fecdd3;">Từ chối</button>
+                                        </form>
+                                        <form asp-controller="Admin" asp-action="ApproveBooking" asp-route-id="@booking.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-primary btn-sm">Duyệt</button>
+                                        </form>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span style="font-size:0.78rem; color:var(--cb-text-muted);">Không cần xử lý</span>
+                                }
                             </td>
                         </tr>
                     }

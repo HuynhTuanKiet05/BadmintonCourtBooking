@@ -15,7 +15,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <!-- Chart.js (for owner dashboard) -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 
     <!-- Bootstrap 5 CSS -->
@@ -51,14 +51,6 @@
                     {
                         <a asp-controller="Booking" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Booking" ? "active" : "")">Lịch của tôi</a>
                     }
-                    @if (User.IsInRole("Owner"))
-                    {
-                        <a asp-controller="Owner" asp-action="Dashboard" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Owner" ? "active" : "")">Dành cho chủ sân</a>
-                    }
-                    else if (!(User.Identity?.IsAuthenticated ?? false))
-                    {
-                        <a asp-controller="Account" asp-action="Login" asp-route-role="owner" class="nav-link">Dành cho chủ sân</a>
-                    }
                     @if (User.IsInRole("Admin"))
                     {
                         <a asp-controller="Admin" asp-action="Index" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" ? "active" : "")">
@@ -76,7 +68,6 @@
                     var role = User.FindFirstValue(ClaimTypes.Role) ?? "Player";
                     var roleLabel = role switch
                     {
-                        "Owner" => "Chủ cụm sân",
                         "Admin" => "Quản trị viên",
                         _ => "Người chơi"
                     };
@@ -141,14 +132,6 @@
         @if (User.IsInRole("Player"))
         {
             <a asp-controller="Booking" asp-action="Index" class="nav-link">Lịch của tôi</a>
-        }
-        @if (User.IsInRole("Owner"))
-        {
-            <a asp-controller="Owner" asp-action="Dashboard" class="nav-link">Dành cho chủ sân</a>
-        }
-        else if (!(User.Identity?.IsAuthenticated ?? false))
-        {
-            <a asp-controller="Account" asp-action="Login" asp-route-role="owner" class="nav-link">Dành cho chủ sân</a>
         }
         @if (User.IsInRole("Admin"))
         {

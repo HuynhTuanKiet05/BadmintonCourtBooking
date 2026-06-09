@@ -9,7 +9,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<VenueEntity> Venues => Set<VenueEntity>();
     public DbSet<CourtEntity> Courts => Set<CourtEntity>();
     public DbSet<BookingEntity> Bookings => Set<BookingEntity>();
-    public DbSet<UserSnapshotEntity> UserSnapshots => Set<UserSnapshotEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,8 +38,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.Property(x => x.District).HasMaxLength(80).IsRequired();
             entity.Property(x => x.Address).HasMaxLength(240).IsRequired();
             entity.Property(x => x.OpenHours).HasMaxLength(40).IsRequired();
-            entity.Property(x => x.OwnerName).HasMaxLength(120).IsRequired();
-            entity.Property(x => x.OwnerPhone).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.ContactName).HasMaxLength(120).IsRequired();
+            entity.Property(x => x.ContactPhone).HasMaxLength(30).IsRequired();
             entity.Property(x => x.Description).HasMaxLength(2000).IsRequired();
             entity.Property(x => x.Highlight).HasMaxLength(200);
             entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(40);
@@ -48,10 +47,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .WithOne(x => x.Venue)
                 .HasForeignKey(x => x.VenueId)
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(x => x.OwnerUser)
-                .WithMany(x => x.OwnedVenues)
-                .HasForeignKey(x => x.OwnerUserId)
-                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<CourtEntity>(entity =>
@@ -82,12 +77,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
-        modelBuilder.Entity<UserSnapshotEntity>(entity =>
-        {
-            entity.ToTable("UserSnapshots");
-            entity.HasKey(x => x.Id);
-            entity.Property(x => x.Name).HasMaxLength(120).IsRequired();
-            entity.Property(x => x.RoleLabel).HasMaxLength(40).IsRequired();
-        });
     }
 }

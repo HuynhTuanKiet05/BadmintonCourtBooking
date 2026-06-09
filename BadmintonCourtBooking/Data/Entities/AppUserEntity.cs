@@ -21,6 +21,5 @@ public class AppUserEntity
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastSignInAt { get; set; }
-    public ICollection<VenueEntity> OwnedVenues { get; set; } = new List<VenueEntity>();
     public ICollection<BookingEntity> PlayerBookings { get; set; } = new List<BookingEntity>();
 }

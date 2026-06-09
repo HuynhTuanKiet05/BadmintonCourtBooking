@@ -57,21 +57,6 @@ public static class PresentationFormatter
 
     public static string FormatTimeRange(DateTime startAt, DateTime endAt) => $"{startAt:HH:mm} – {endAt:HH:mm}";
 
-    public static string FormatOwnerTime(DateTime startAt)
-    {
-        if (startAt.Date == DateTime.Today)
-        {
-            return $"Hôm nay · {startAt:HH:mm}";
-        }
-
-        if (startAt.Date == DateTime.Today.AddDays(1))
-        {
-            return $"Mai · {startAt:HH:mm}";
-        }
-
-        return $"{ViDays[(int)startAt.DayOfWeek]} · {startAt:HH:mm}";
-    }
-
     public static string FormatJoinDate(DateTime date) => date.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
 
     public static string MaskPhone(string phone)

@@ -18,13 +18,3 @@ public class Booking
     public string When { get; set; } = string.Empty; // upcoming, completed, cancelled
 }
 
-public class OwnerBooking
-{
-    public string Id { get; set; } = string.Empty;
-    public string Customer { get; set; } = string.Empty;
-    public string Phone { get; set; } = string.Empty;
-    public string Court { get; set; } = string.Empty;
-    public string Time { get; set; } = string.Empty;
-    public int Total { get; set; }
-    public BookingStatus Status { get; set; }
-}

@@ -141,7 +141,7 @@ public class VenueCatalogService(ApplicationDbContext context) : IVenueCatalogSe
             District = record.District,
             Address = record.Address,
             OpenHours = record.OpenHours,
-            OwnerPhone = record.OwnerPhone,
+            ContactPhone = record.ContactPhone,
             Highlight = record.Highlight,
             Rating = record.Rating,
             Reviews = record.Reviews,
