@@ -1,296 +1,227 @@
-# 📋 Kế hoạch phân chia nhiệm vụ dự án BadmintonCourtBooking
+# Kế hoạch phân chia nhiệm vụ dự án BadmintonCourtBooking
 
-## Mục tiêu
-Chia đều các chức năng của dự án cho **2 thành viên** để đẩy code lên Git, đảm bảo mỗi người có **lượt commit đều nhau** và hợp lý.
+Tài liệu này dùng cho nhánh `scale-down-2-roles`, sau khi dự án đã được rút gọn còn 2 vai trò chính: `Admin` và `Player`.
 
----
+Mục tiêu của file này là chia việc rõ ràng cho 2 thành viên, tránh chồng chéo file, đảm bảo lịch sử commit hợp lý và giúp người còn lại pull code về test tiếp dễ dàng.
 
-## 📊 Tổng quan dự án
+## 1. Tổng quan kỹ thuật
 
-**Kiến trúc:** ASP.NET Core MVC + Entity Framework Core + SQL Server
+| Hạng mục | Công nghệ / phạm vi |
+|---|---|
+| Framework | ASP.NET Core MVC, .NET 9 |
+| Database | SQL Server LocalDB |
+| ORM | Entity Framework Core 9 |
+| Authentication | ASP.NET Core Identity, Google/Facebook external login |
+| Role hiện tại | `Admin`, `Player` |
+| UI | Razor Views, Bootstrap, CSS custom, JavaScript thuần |
+| Branch làm việc | `scale-down-2-roles` |
 
-| Tầng | Mô tả |
-|------|--------|
-| **Controllers** | 5 controller (Home, Account, Venue, Booking, Admin) |
-| **Services** | 7 service chính + interfaces |
-| **Models/Entities** | 12 model + 4 entity |
-| **Views** | 6 thư mục view (Home, Account, Venue, Booking, Admin, Shared) |
-| **Data** | DbContext, Seeder, Migrations |
-| **Frontend** | 2 CSS + 3 JS + Shared partials |
-| **Config** | Program.cs, appsettings |
+Các vai trò cũ như `Owner` không còn nằm trong phạm vi hiện tại. Mọi chức năng quản trị sân, duyệt sân, duyệt booking và khóa/mở khóa người dùng thuộc về `Admin`. Người chơi dùng `Player`.
 
----
+## 2. Nguyên tắc làm việc chung
 
-## 👥 Phân chia nhiệm vụ
-
----
-
-### 🟢 Thành viên 1: HuynhTuanKiet05 — Module Người dùng & Đặt sân
-
-> **Phụ trách:** Xác thực, Hồ sơ người dùng, Trang chủ, Đặt lịch sân, Giao diện chung
-
----
-
-#### ✅ Commit 1: Khởi tạo dự án & cấu hình cơ bản
-**Message:** `feat: Khởi tạo project ASP.NET Core MVC`
-
-| File | Mô tả |
-|------|--------|
-| `BadmintonCourtBooking.sln` | Solution file |
-| `BadmintonCourtBooking/BadmintonCourtBooking.csproj` | Project file + NuGet packages |
-| `BadmintonCourtBooking/Program.cs` | Cấu hình DI, Authentication, Middleware |
-| `BadmintonCourtBooking/appsettings.json` | Connection string, cấu hình |
-| `BadmintonCourtBooking/appsettings.Development.json` | Cấu hình dev |
-| `.gitignore`, `.gitattributes` | Git config |
-
----
-
-#### ✅ Commit 2: Tầng Data — Entity & DbContext
-**Message:** `feat: Thêm Entity models và DbContext`
-
-| File | Mô tả |
-|------|--------|
-| `Data/Entities/AppUserEntity.cs` | Entity người dùng |
-| `Data/Entities/BookingEntity.cs` | Entity đặt sân |
-| `Data/ApplicationDbContext.cs` | DbContext chính |
-| `Data/ApplicationDbContextFactory.cs` | Design-time factory |
-
----
-
-#### ✅ Commit 3: Migration khởi tạo database
-**Message:** `feat: Thêm migration khởi tạo database`
-
-| File | Mô tả |
-|------|--------|
-| `Migrations/20260526091514_InitialCreate.cs` | Migration tạo bảng Venues, Courts, Bookings |
-| `Migrations/20260526091514_InitialCreate.Designer.cs` | Designer file |
-
----
-
-#### ✅ Commit 4: Xác thực & đăng nhập
-**Message:** `feat: Thêm chức năng đăng nhập, đăng ký, cookie authentication`
-
-| File | Mô tả |
-|------|--------|
-| `Controllers/AccountController.cs` | Controller xử lý Login, Register, Logout, ExternalLogin |
-| `Services/IAccountService.cs` | Interface account service |
-| `Services/AccountService.cs` | Logic đăng nhập, đăng ký, hash password |
-| `Services/AccountValueNormalizer.cs` | Chuẩn hóa email/phone |
-| `Models/AccountViewModel.cs` | ViewModel đăng nhập/đăng ký/hồ sơ |
-| `Models/AppRoles.cs` | Định nghĩa vai trò Admin/Player |
-
----
-
-#### ✅ Commit 5: Giao diện đăng nhập & đăng ký
-**Message:** `feat: Thêm giao diện trang đăng nhập và đăng ký`
-
-| File | Mô tả |
-|------|--------|
-| `Views/Account/Login.cshtml` | Trang đăng nhập (form, social login) |
-| `Views/Account/Register.cshtml` | Trang đăng ký (form validation) |
-| `Views/Account/AccessDenied.cshtml` | Trang từ chối truy cập |
-
----
-
-#### ✅ Commit 6: Hồ sơ người dùng & đổi mật khẩu
-**Message:** `feat: Thêm trang hồ sơ cá nhân, đổi mật khẩu, cài đặt thông báo`
-
-| File | Mô tả |
-|------|--------|
-| `Views/Account/Profile.cshtml` | Giao diện hồ sơ, đổi mật khẩu, thông báo |
-| `Services/ICurrentUserService.cs` | Interface lấy user hiện tại |
-| `Services/CurrentUserService.cs` | Lấy thông tin user từ Claims |
-| `Services/RequireActiveUserFilter.cs` | Filter kiểm tra user bị khóa |
-
----
-
-#### ✅ Commit 7: Trang chủ & đặt nhanh
-**Message:** `feat: Thêm trang chủ với sân nổi bật và đặt nhanh`
-
-| File | Mô tả |
-|------|--------|
-| `Controllers/HomeController.cs` | Controller trang chủ + hero slot matrix |
-| `Views/Home/Index.cshtml` | Giao diện trang chủ, sân nổi bật, đặt nhanh |
-| `Views/Home/Privacy.cshtml` | Trang chính sách |
-| `Models/ErrorViewModel.cs` | Model lỗi |
-
----
-
-#### ✅ Commit 8: Đặt sân & lịch đặt
-**Message:** `feat: Thêm chức năng đặt sân và xem lịch đặt của tôi`
-
-| File | Mô tả |
-|------|--------|
-| `Controllers/BookingController.cs` | Controller xem/hủy booking |
-| `Services/IBookingService.cs` | Interface booking service |
-| `Services/BookingService.cs` | Logic tạo/hủy booking, check trùng |
-| `Views/Booking/Index.cshtml` | Giao diện "Lịch của tôi" |
-| `Models/CreateBookingInputModel.cs` | Input model đặt sân |
-| `Models/Booking.cs` | Model booking |
-
----
-
-#### ✅ Commit 9: Layout, Footer & Shared partials
-**Message:** `feat: Thêm layout chung, footer, toast và partial views`
-
-| File | Mô tả |
-|------|--------|
-| `Views/Shared/_Layout.cshtml` | Layout chính (navbar, logo, responsive menu) |
-| `Views/Shared/_Footer.cshtml` | Footer trang web |
-| `Views/Shared/_Toast.cshtml` | Toast notification |
-| `Views/Shared/_EmptyBookingsState.cshtml` | Trạng thái trống |
-| `Views/Shared/_StatusBadge.cshtml` | Badge trạng thái |
-| `Views/Shared/Error.cshtml` | Trang lỗi |
-| `Views/_ViewImports.cshtml` | Import chung |
-| `Views/_ViewStart.cshtml` | ViewStart |
-
----
-
----
-
-### 🔵 Thành viên 2: Đức Trí — Module Quản trị & Sân bãi
-
-> **Phụ trách:** Quản trị Admin, Quản lý cụm sân/sân con, Danh sách & chi tiết sân, Giao diện CSS/JS, Dữ liệu mẫu
-
----
-
-#### ✅ Commit 1: Entity sân bãi
-**Message:** `feat: Thêm Entity cụm sân và sân con`
-
-| File | Mô tả |
-|------|--------|
-| `Data/Entities/VenueEntity.cs` | Entity cụm sân |
-| `Data/Entities/CourtEntity.cs` | Entity sân con |
-| `Models/Venue.cs` | Model cụm sân |
-| `Models/Court.cs` | Model sân con |
-| `Models/VenueStatus.cs` | Enum trạng thái sân |
-
----
-
-#### ✅ Commit 2: Migration xác thực & vai trò
-**Message:** `feat: Thêm migration hệ thống xác thực và vai trò người dùng`
-
-| File | Mô tả |
-|------|--------|
-| `Migrations/20260526095517_AddAuthenticationAndUsers.cs` | Migration thêm bảng Users |
-| `Migrations/20260526095517_AddAuthenticationAndUsers.Designer.cs` | Designer file |
-| `Migrations/20260609062323_ScaleDownToAdminPlayerRoles.cs` | Migration rút gọn vai trò |
-| `Migrations/20260609062323_ScaleDownToAdminPlayerRoles.Designer.cs` | Designer file |
-| `Migrations/ApplicationDbContextModelSnapshot.cs` | DB snapshot |
-
----
-
-#### ✅ Commit 3: Dữ liệu mẫu (Seed Data)
-**Message:** `feat: Thêm dữ liệu mẫu cho sân, booking và tài khoản demo`
-
-| File | Mô tả |
-|------|--------|
-| `Data/ApplicationDbContextSeeder.cs` | Seed data sân, booking, users |
-| `Data/DemoDataConstants.cs` | Hằng số dữ liệu demo |
-| `Models/MockData.cs` | Dữ liệu mock cho dev |
-
----
-
-#### ✅ Commit 4: Danh sách sân & tìm kiếm/lọc
-**Message:** `feat: Thêm trang danh sách sân với bộ lọc quận huyện và tìm kiếm`
-
-| File | Mô tả |
-|------|--------|
-| `Controllers/VenueController.cs` | Controller danh sách/chi tiết/đặt sân |
-| `Services/IVenueCatalogService.cs` | Interface venue service |
-| `Services/VenueCatalogService.cs` | Logic tìm kiếm, lọc, slot matrix |
-| `Models/VenueIndexViewModel.cs` | ViewModel danh sách sân |
-| `Views/Venue/Index.cshtml` | Giao diện danh sách sân |
-
----
-
-#### ✅ Commit 5: Chi tiết sân & lịch đặt
-**Message:** `feat: Thêm trang chi tiết cụm sân với lịch đặt theo ngày`
-
-| File | Mô tả |
-|------|--------|
-| `Views/Venue/Detail.cshtml` | Giao diện chi tiết sân + bảng slot |
-| `Models/VenueDetailViewModel.cs` | ViewModel chi tiết sân |
-| `wwwroot/js/venue-booking.js` | JS xử lý chọn slot, đổi ngày, đặt sân |
-| `Views/Shared/_CourtLines.cshtml` | SVG đường kẻ sân |
-
----
-
-#### ✅ Commit 6: Trang quản trị Admin (Dashboard)
-**Message:** `feat: Thêm trang quản trị Admin với dashboard thống kê`
-
-| File | Mô tả |
-|------|--------|
-| `Controllers/AdminController.cs` | Controller admin (duyệt sân, booking, user) |
-| `Services/IAdminDashboardService.cs` | Interface admin service |
-| `Services/AdminDashboardService.cs` | Logic dashboard, duyệt, khóa user |
-| `Models/AdminManagementViewModels.cs` | ViewModels quản trị |
-| `Views/Admin/Index.cshtml` | Giao diện dashboard admin |
-
----
-
-#### ✅ Commit 7: Quản lý cụm sân (Admin)
-**Message:** `feat: Thêm trang quản lý cụm sân và sân con cho Admin`
-
-| File | Mô tả |
-|------|--------|
-| `Views/Admin/Venues.cshtml` | Giao diện quản lý sân (CRUD) |
-| `Views/Shared/_VenueCard.cshtml` | Card sân dùng chung |
-| `Views/Shared/_DemoAccountsPanel.cshtml` | Panel tài khoản demo |
-
----
-
-#### ✅ Commit 8: Giao diện CSS toàn bộ
-**Message:** `feat: Thêm toàn bộ stylesheet cho giao diện web`
-
-| File | Mô tả |
-|------|--------|
-| `wwwroot/css/site.css` | CSS chính (layout, navbar, cards, forms...) |
-| `wwwroot/css/courtbook.css` | CSS bổ sung (booking, admin, responsive...) |
-| `Views/Shared/_Layout.cshtml.css` | CSS scoped cho layout |
-| `wwwroot/favicon.ico` | Favicon |
-
----
-
-#### ✅ Commit 9: JavaScript chức năng & tiện ích
-**Message:** `feat: Thêm JavaScript xử lý filter sân, toast và tương tác`
-
-| File | Mô tả |
-|------|--------|
-| `wwwroot/js/site.js` | JS chung (toast, animations, navbar) |
-| `wwwroot/js/venue-filter.js` | JS bộ lọc sân |
-| `Views/Shared/_ValidationScriptsPartial.cshtml` | Scripts validation |
-| `Services/OperationResult.cs` | Model kết quả thao tác |
-| `Services/PresentationFormatter.cs` | Format hiển thị ngày/giờ |
-| `Extensions/ModelStateDictionaryExtensions.cs` | Extension lấy lỗi validation |
-
----
-
-## 📈 Bảng tổng kết
-
-| Tiêu chí | HuynhTuanKiet05 | Đức Trí |
-|----------|:---:|:---:|
-| **Số commit** | 9 | 9 |
-| **Module chính** | Account, Home, Booking, Layout | Venue, Admin, CSS/JS, Data |
-| **Controllers** | 3 (Home, Account, Booking) | 2 (Venue, Admin) |
-| **Services** | 5 file | 6 file |
-| **Views** | ~10 file | ~10 file |
-| **Models** | 5 file | 7 file |
-| **Data/Migrations** | 4 file | 8 file |
-| **Frontend (CSS/JS)** | — | 6 file |
-| **Tổng ~file** | ~28 | ~32 |
-
----
-
-## 🔧 Cách đẩy code lên Git
-
-Cả 2 người đều commit trực tiếp trên nhánh `main`. Trước khi commit luôn pull về trước:
+1. Mỗi người chỉ sửa chính các file thuộc module của mình.
+2. File dùng chung như `Program.cs`, `ApplicationDbContext.cs`, migrations, layout chung phải ghi rõ lý do trong commit message.
+3. Trước khi commit luôn chạy tối thiểu:
 
 ```bash
-git pull origin main
-git add <các file thuộc commit>
-git commit -m "feat: <message>"
-git push origin main
+dotnet build
+dotnet ef migrations has-pending-model-changes
 ```
 
-**Lưu ý:** Nên commit xen kẽ giữa 2 người để git history trông tự nhiên (ví dụ: Kiệt commit sáng, Trí commit chiều).
+4. Trước khi push luôn pull/fetch nhánh mới nhất:
+
+```bash
+git fetch origin scale-down-2-roles
+git status
+```
+
+5. Không commit các thư mục local/cache:
+
+```text
+.build-cache/
+.tools/
+.vs/
+bin/
+obj/
+```
+
+## 3. Trạng thái commit hiện tại
+
+Commit 1 của Kiệt và Trí đã được tách để đưa code nền lên trước. Từ các commit tiếp theo, mỗi người tiếp tục theo phạm vi bên dưới để lịch sử commit rõ người, rõ module.
+
+Commit mới nhất đang có trên `scale-down-2-roles`:
+
+```text
+80d5ce2 Chuyển xác thực sang ASP.NET Core Identity
+```
+
+Commit này là commit hạ tầng dùng chung, đã đưa auth về ASP.NET Core Identity và cần cả 2 người dựa trên nền này để làm tiếp.
+
+## 4. Phân chia theo thành viên
+
+### 4.1. Huỳnh Tuấn Kiệt - Player, Auth, Booking, Home
+
+Kiệt phụ trách toàn bộ luồng người chơi: đăng nhập, đăng ký, hồ sơ, trang chủ, lịch đặt sân của tôi và hành vi tạo/hủy booking từ phía player.
+
+#### File sở hữu chính
+
+| Nhóm | File / thư mục |
+|---|---|
+| Controller | `Controllers/AccountController.cs`, `Controllers/BookingController.cs`, `Controllers/HomeController.cs` |
+| Identity wrapper | `Areas/Identity/Pages/Account/**` |
+| Service | `Services/AccountService.cs`, `Services/IAccountService.cs`, `Services/BookingService.cs`, `Services/IBookingService.cs` |
+| Current user | `Services/CurrentUserService.cs`, `Services/ICurrentUserService.cs`, `Services/RequireActiveUserFilter.cs`, `Services/AppUserClaimsPrincipalFactory.cs` |
+| Model | `Models/AccountViewModel.cs`, `Models/AppRoles.cs`, `Models/Booking.cs`, `Models/CreateBookingInputModel.cs`, `Models/ErrorViewModel.cs` |
+| View | `Views/Account/**`, `Views/Booking/**`, `Views/Home/**` |
+| Shared UI liên quan user | `Views/Shared/_Layout.cshtml`, `Views/Shared/_Toast.cshtml`, `Views/Shared/_EmptyBookingsState.cshtml`, `Views/Shared/_StatusBadge.cshtml` |
+
+#### Lộ trình commit của Kiệt
+
+| Commit | Message đề xuất | Nội dung |
+|---|---|---|
+| K1 | `feat: khoi tao project mvc va cau hinh nen` | Solution, project, cấu hình app, cấu trúc MVC ban đầu. |
+| K2 | `feat: them xac thuc nguoi dung bang identity` | AccountController, AccountService, Identity pages, claim factory, login/register/logout. |
+| K3 | `feat: them giao dien dang nhap dang ky va ho so` | UI login/register/profile/access denied, validation, toast auth. |
+| K4 | `feat: them trang chu va dieu huong theo vai tro` | Home page, navbar theo role, link Login/Register/Profile/Logout. |
+| K5 | `feat: them luong dat san cho nguoi choi` | BookingService tạo/hủy booking, BookingController, input model booking. |
+| K6 | `feat: them trang lich dat san cua toi` | View lịch booking của player, trạng thái upcoming/completed/cancelled. |
+| K7 | `fix: dong bo active user va quyen truy cap player` | RequireActiveUserFilter, CurrentUserService, xử lý user bị khóa. |
+| K8 | `test: kiem tra luong player auth va booking` | Smoke test login player, đặt sân, hủy sân, profile. |
+
+#### Checklist nghiệm thu của Kiệt
+
+- Player đăng ký tài khoản mới được.
+- Player đăng nhập bằng email hoặc số điện thoại được.
+- Player đăng xuất được.
+- Player vào được `Lịch của tôi`.
+- Player đặt được slot còn trống.
+- Player không đặt được slot trùng hoặc slot đã qua.
+- Player hủy được booking hợp lệ.
+- User bị khóa bị sign out và không thao tác tiếp được.
+
+### 4.2. Đức Trí - Venue, Admin, Data, Frontend hỗ trợ
+
+Trí phụ trách dữ liệu sân bãi, danh sách/chi tiết sân, dashboard admin, quản lý cụm sân/sân con, duyệt booking, khóa/mở khóa user và phần CSS/JS hỗ trợ các màn hình venue/admin.
+
+#### File sở hữu chính
+
+| Nhóm | File / thư mục |
+|---|---|
+| Controller | `Controllers/VenueController.cs`, `Controllers/AdminController.cs` |
+| Service | `Services/VenueCatalogService.cs`, `Services/IVenueCatalogService.cs`, `Services/AdminDashboardService.cs`, `Services/IAdminDashboardService.cs` |
+| Helper service | `Services/OperationResult.cs`, `Services/PresentationFormatter.cs` |
+| Data | `Data/ApplicationDbContextSeeder.cs`, `Data/DemoDataConstants.cs`, `Data/Entities/VenueEntity.cs`, `Data/Entities/CourtEntity.cs` |
+| Model | `Models/Venue.cs`, `Models/Court.cs`, `Models/VenueStatus.cs`, `Models/VenueIndexViewModel.cs`, `Models/VenueDetailViewModel.cs`, `Models/AdminManagementViewModels.cs`, `Models/MockData.cs` |
+| View | `Views/Venue/**`, `Views/Admin/**` |
+| Shared UI liên quan sân/admin | `Views/Shared/_VenueCard.cshtml`, `Views/Shared/_CourtLines.cshtml`, `Views/Shared/_DemoAccountsPanel.cshtml`, `Views/Shared/_ValidationScriptsPartial.cshtml` |
+| Frontend | `wwwroot/css/site.css`, `wwwroot/css/courtbook.css`, `wwwroot/js/site.js`, `wwwroot/js/venue-booking.js`, `wwwroot/js/venue-filter.js` |
+
+#### Lộ trình commit của Trí
+
+| Commit | Message đề xuất | Nội dung |
+|---|---|---|
+| T1 | `feat: them entity san bai va model venue` | VenueEntity, CourtEntity, Venue/Court model, VenueStatus. |
+| T2 | `feat: them du lieu mau san va tai khoan demo` | Seeder, DemoDataConstants, MockData, dữ liệu sân/booking/demo user. |
+| T3 | `feat: them danh sach san va bo loc` | VenueController index, VenueCatalogService search/filter, VenueIndexViewModel, view danh sách sân. |
+| T4 | `feat: them chi tiet san va lich slot` | Detail view, slot matrix, `venue-booking.js`, chọn ngày/slot. |
+| T5 | `feat: them dashboard quan tri admin` | AdminController index, AdminDashboardService, AdminManagementViewModels, view dashboard. |
+| T6 | `feat: them quan ly cum san va san con` | View/Admin/Venues, tạo/sửa cụm sân, tạo/sửa sân con. |
+| T7 | `feat: them duyet booking va khoa mo user` | Admin duyệt/từ chối booking, duyệt/ẩn venue, khóa/mở khóa player. |
+| T8 | `style: hoan thien css va javascript giao dien` | CSS responsive, card sân, toast, filter, admin UI polish. |
+| T9 | `test: kiem tra luong admin venue va booking` | Smoke test admin login, dashboard, venues, approve/reject, lock/unlock. |
+
+#### Checklist nghiệm thu của Trí
+
+- Trang danh sách sân load được và lọc/tìm kiếm được.
+- Trang chi tiết sân hiển thị đúng courts và slot theo ngày.
+- Slot pending/confirmed/cancelled hiển thị đúng trạng thái.
+- Admin đăng nhập vào dashboard được.
+- Admin xem thống kê user, sân, booking được.
+- Admin tạo/sửa cụm sân và sân con được.
+- Admin duyệt/từ chối booking được.
+- Admin khóa/mở khóa player được, không khóa được admin.
+
+## 5. File dùng chung cần phối hợp
+
+Một số file không nên tự ý sửa một mình nếu thay đổi có ảnh hưởng toàn hệ thống.
+
+| File | Chủ trì | Khi nào cần báo người còn lại |
+|---|---|---|
+| `Program.cs` | Kiệt | Khi đổi auth, DI, middleware, route. |
+| `Data/ApplicationDbContext.cs` | Trí | Khi đổi schema, quan hệ entity, index. |
+| `Data/Entities/AppUserEntity.cs` | Kiệt | Khi đổi field user, role, Identity. |
+| `Data/Entities/BookingEntity.cs` | Kiệt | Khi đổi schema booking hoặc quan hệ user/court. |
+| `Migrations/**` | Trí | Khi thêm/sửa migration ảnh hưởng DB. |
+| `Views/Shared/_Layout.cshtml` | Kiệt | Khi đổi điều hướng, auth menu, role menu. |
+| `wwwroot/css/**` | Trí | Khi đổi style dùng chung nhiều trang. |
+
+## 6. Quy tắc commit và push
+
+Commit message nên dùng dạng:
+
+```text
+feat: them ...
+fix: sua ...
+style: cap nhat ...
+test: kiem tra ...
+docs: cap nhat ...
+```
+
+Quy trình chuẩn:
+
+```bash
+git fetch origin scale-down-2-roles
+git status
+dotnet build
+dotnet ef migrations has-pending-model-changes
+git add <file da sua>
+git commit -m "<message>"
+git push origin scale-down-2-roles
+```
+
+Nếu pull về có conflict, ưu tiên giữ đúng ownership:
+
+- Conflict ở Account/Booking/Home: Kiệt xử lý chính.
+- Conflict ở Venue/Admin/Data/CSS/JS: Trí xử lý chính.
+- Conflict ở migration hoặc `ApplicationDbContext.cs`: hai người xem cùng nhau.
+
+## 7. Checklist test cuối trước khi nộp
+
+Mỗi lần gộp xong một nhóm commit lớn, cần kiểm tra tối thiểu:
+
+```bash
+dotnet build
+dotnet ef database update
+dotnet ef migrations has-pending-model-changes
+```
+
+Smoke test thủ công:
+
+| Luồng | Kết quả cần đạt |
+|---|---|
+| Public | Trang chủ, danh sách sân, chi tiết sân trả 200. |
+| Player | Login, profile, đặt sân, xem lịch, hủy booking hoạt động. |
+| Admin | Login, dashboard, quản lý sân, duyệt booking, khóa/mở user hoạt động. |
+| Auth | User chưa đăng nhập bị redirect về login khi vào trang cần quyền. |
+| Role | Player không vào được admin, Admin không bị khóa bởi chính admin. |
+
+## 8. Tài khoản demo
+
+| Vai trò | Email | Mật khẩu |
+|---|---|---|
+| Player | `player@courtbook.local` | `Player@123` |
+| Admin | `admin@courtbook.local` | `Admin@123` |
+
+## 9. Ghi chú sau refactor Identity
+
+Từ commit `80d5ce2`, hệ thống đã chuyển sang ASP.NET Core Identity:
+
+- User lưu ở bảng `AspNetUsers`.
+- Role lưu ở `AspNetRoles`.
+- Mapping user-role lưu ở `AspNetUserRoles`.
+- Login path chính là `/Identity/Account/Login`.
+- Profile path chính là `/Identity/Account/Manage`, hiện redirect về trang profile MVC cũ.
+- Không sử dụng lại cột `Role`, `NormalizedPhoneNumber`, `IsPhoneVerified` kiểu cũ trên `Users`.
+
+Khi viết code mới, không tự hash password thủ công. Luôn dùng `UserManager`, `SignInManager`, `RoleManager` và claim hiện tại.
