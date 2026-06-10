@@ -2,22 +2,29 @@ using System.Globalization;
 using BadmintonCourtBooking.Data;
 using BadmintonCourtBooking.Data.Entities;
 using BadmintonCourtBooking.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace BadmintonCourtBooking.Services;
 
-public class AdminDashboardService(ApplicationDbContext context, ICurrentUserService currentUserService) : IAdminDashboardService
+public class AdminDashboardService(
+    ApplicationDbContext context,
+    ICurrentUserService currentUserService,
+    UserManager<AppUserEntity> userManager) : IAdminDashboardService
 {
     private readonly ApplicationDbContext _context = context;
     private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly UserManager<AppUserEntity> _userManager = userManager;
 
     public async Task<AdminDashboardViewModel> GetDashboardAsync(CancellationToken cancellationToken = default)
     {
-        var users = await _context.Users
+        var roleMap = await BuildRoleMapAsync(cancellationToken);
+        var users = (await _context.Users
             .AsNoTracking()
-            .Where(user => user.Role != AppRoles.Admin)
             .OrderByDescending(user => user.JoinedAt)
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken))
+            .Where(user => !HasRole(roleMap, user.Id, AppRoles.Admin))
+            .ToList();
 
         var venues = await _context.Venues
             .AsNoTracking()
@@ -58,7 +65,7 @@ public class AdminDashboardService(ApplicationDbContext context, ICurrentUserSer
         {
             AdminName = _currentUserService.User?.FullName ?? "Quản trị viên Đặt Sân Cầu Lông",
             TotalUsers = users.Count,
-            TotalPlayers = users.Count(user => user.Role == AppRoles.Player),
+            TotalPlayers = users.Count(user => HasRole(roleMap, user.Id, AppRoles.Player)),
             LockedUsers = users.Count(user => !user.IsActive),
             TotalVenues = venues.Count,
             ApprovedVenues = venues.Count(venue => venue.Status == VenueStatus.Approved),
@@ -95,9 +102,9 @@ public class AdminDashboardService(ApplicationDbContext context, ICurrentUserSer
                 {
                     Id = user.Id,
                     FullName = user.FullName,
-                    Email = user.Email,
-                    PhoneNumber = user.PhoneNumber,
-                    Role = user.Role,
+                    Email = user.Email ?? string.Empty,
+                    PhoneNumber = user.PhoneNumber ?? string.Empty,
+                    Role = GetPrimaryRole(roleMap, user.Id),
                     IsActive = user.IsActive,
                     OwnedVenueCount = 0,
                     PlayerBookingCount = bookingsByPlayer.GetValueOrDefault(user.Id),
@@ -446,13 +453,13 @@ public class AdminDashboardService(ApplicationDbContext context, ICurrentUserSer
 
     public async Task<OperationResult> LockUserAsync(string id, CancellationToken cancellationToken = default)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+        var user = await _userManager.FindByIdAsync(id);
         if (user is null)
         {
             return OperationResult.Fail("Không tìm thấy tài khoản cần khóa.");
         }
 
-        if (user.Role == AppRoles.Admin)
+        if (await _userManager.IsInRoleAsync(user, AppRoles.Admin))
         {
             return OperationResult.Fail("Không thể khóa tài khoản quản trị viên.");
         }
@@ -469,20 +476,20 @@ public class AdminDashboardService(ApplicationDbContext context, ICurrentUserSer
 
         user.IsActive = false;
         user.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync(cancellationToken);
+        await _userManager.UpdateAsync(user);
 
         return OperationResult.Success($"Đã khóa tài khoản '{user.FullName}'. Người dùng sẽ không thể đăng nhập hoặc thao tác tiếp trên hệ thống.");
     }
 
     public async Task<OperationResult> UnlockUserAsync(string id, CancellationToken cancellationToken = default)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+        var user = await _userManager.FindByIdAsync(id);
         if (user is null)
         {
             return OperationResult.Fail("Không tìm thấy tài khoản cần mở khóa.");
         }
 
-        if (user.Role == AppRoles.Admin)
+        if (await _userManager.IsInRoleAsync(user, AppRoles.Admin))
         {
             return OperationResult.Fail("Không cần mở khóa cho tài khoản quản trị viên.");
         }
@@ -494,9 +501,40 @@ public class AdminDashboardService(ApplicationDbContext context, ICurrentUserSer
 
         user.IsActive = true;
         user.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync(cancellationToken);
+        await _userManager.UpdateAsync(user);
 
         return OperationResult.Success($"Đã mở khóa tài khoản '{user.FullName}'. Người dùng có thể đăng nhập lại.");
+    }
+
+    private async Task<Dictionary<string, List<string>>> BuildRoleMapAsync(CancellationToken cancellationToken)
+    {
+        var rows = await _context.UserRoles
+            .AsNoTracking()
+            .Join(
+                _context.Roles.AsNoTracking(),
+                userRole => userRole.RoleId,
+                role => role.Id,
+                (userRole, role) => new { userRole.UserId, role.Name })
+            .Where(item => item.Name != null)
+            .ToListAsync(cancellationToken);
+
+        return rows
+            .GroupBy(item => item.UserId)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(item => item.Name!).ToList());
+    }
+
+    private static bool HasRole(IReadOnlyDictionary<string, List<string>> roleMap, string userId, string role)
+    {
+        return roleMap.TryGetValue(userId, out var roles) && roles.Contains(role);
+    }
+
+    private static string GetPrimaryRole(IReadOnlyDictionary<string, List<string>> roleMap, string userId)
+    {
+        return roleMap.TryGetValue(userId, out var roles)
+            ? roles.FirstOrDefault(role => role == AppRoles.Player) ?? roles.FirstOrDefault() ?? AppRoles.Player
+            : AppRoles.Player;
     }
 
     private static AdminManagedVenueViewModel MapManagedVenue(VenueEntity venue)

@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using BadmintonCourtBooking.Data;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -47,7 +47,7 @@ public class RequireActiveUserFilter(ApplicationDbContext context) : IAsyncActio
 
     private static async Task ForceSignOutAsync(FilterContext context)
     {
-        await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await context.HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
     }
 
     private static IActionResult BuildLockedResult(FilterContext context)
@@ -69,6 +69,6 @@ public class RequireActiveUserFilter(ApplicationDbContext context) : IAsyncActio
             };
         }
 
-        return new RedirectToActionResult("Login", "Account", new { locked = true });
+        return new RedirectToPageResult("/Account/Login", new { area = "Identity", locked = true });
     }
 }

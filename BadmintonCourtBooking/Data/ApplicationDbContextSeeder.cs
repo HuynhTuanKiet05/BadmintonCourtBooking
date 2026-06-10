@@ -7,70 +7,119 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BadmintonCourtBooking.Data;
 
-public class ApplicationDbContextSeeder(ApplicationDbContext context, IPasswordHasher<AppUserEntity> passwordHasher)
+public class ApplicationDbContextSeeder(
+    ApplicationDbContext context,
+    UserManager<AppUserEntity> userManager,
+    RoleManager<IdentityRole> roleManager)
 {
     private readonly ApplicationDbContext _context = context;
-    private readonly IPasswordHasher<AppUserEntity> _passwordHasher = passwordHasher;
+    private readonly UserManager<AppUserEntity> _userManager = userManager;
+    private readonly RoleManager<IdentityRole> _roleManager = roleManager;
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
+        await SeedRolesAsync();
         await SeedUsersAsync(cancellationToken);
         await SeedVenuesAsync(cancellationToken);
         await SeedBookingsAsync(cancellationToken);
         await SyncBookingPlayersAsync(cancellationToken);
     }
 
+    private async Task SeedRolesAsync()
+    {
+        foreach (var roleName in new[] { AppRoles.Admin, AppRoles.Player })
+        {
+            if (!await _roleManager.RoleExistsAsync(roleName))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+        }
+    }
+
     private async Task SeedUsersAsync(CancellationToken cancellationToken)
     {
-        var existingUsers = await _context.Users.ToListAsync(cancellationToken);
-        var hasChanges = false;
+        var existingUsers = await _userManager.Users.ToListAsync(cancellationToken);
 
         foreach (var seed in BuildSeedAccounts())
         {
-            var user = existingUsers.FirstOrDefault(item => item.Id == seed.Id)
-                ?? existingUsers.FirstOrDefault(item => item.NormalizedEmail == AccountValueNormalizer.NormalizeEmail(seed.Email))
-                ?? existingUsers.FirstOrDefault(item => item.NormalizedPhoneNumber == AccountValueNormalizer.NormalizePhone(seed.PhoneNumber));
+            cancellationToken.ThrowIfCancellationRequested();
 
-            if (user is not null)
+            var normalizedEmail = AccountValueNormalizer.NormalizeEmail(seed.Email);
+            var normalizedPhone = AccountValueNormalizer.NormalizePhone(seed.PhoneNumber);
+
+            var user = existingUsers.FirstOrDefault(item => item.Id == seed.Id)
+                ?? existingUsers.FirstOrDefault(item => item.NormalizedEmail == normalizedEmail)
+                ?? existingUsers.FirstOrDefault(item =>
+                    AccountValueNormalizer.NormalizePhone(item.PhoneNumber) == normalizedPhone);
+
+            if (user is null)
             {
-                if (user.Role != seed.Role)
+                user = new AppUserEntity
                 {
-                    user.Role = seed.Role;
-                    user.UpdatedAt = DateTime.UtcNow;
-                    hasChanges = true;
+                    Id = seed.Id,
+                    UserName = seed.Email,
+                    FullName = seed.FullName,
+                    Email = seed.Email,
+                    EmailConfirmed = true,
+                    PhoneNumber = seed.PhoneNumber,
+                    PhoneNumberConfirmed = true,
+                    PlayArea = seed.PlayArea,
+                    JoinedAt = seed.JoinedAt,
+                    UpdatedAt = seed.JoinedAt,
+                    IsActive = true,
+                    ReceiveBookingConfirm = true,
+                    ReceivePlayReminder = true,
+                    ReceivePromo = seed.ReceivePromo
+                };
+
+                var createResult = await _userManager.CreateAsync(user, seed.Password);
+                if (!createResult.Succeeded)
+                {
+                    throw new InvalidOperationException($"Cannot seed user '{seed.Email}': {BuildIdentityErrorMessage(createResult)}");
                 }
 
-                continue;
+                existingUsers.Add(user);
+            }
+            else
+            {
+                user.UserName = seed.Email;
+                user.FullName = seed.FullName;
+                user.Email = seed.Email;
+                user.EmailConfirmed = true;
+                user.PhoneNumber = seed.PhoneNumber;
+                user.PhoneNumberConfirmed = true;
+                user.PlayArea = seed.PlayArea;
+                user.ReceiveBookingConfirm = true;
+                user.ReceivePlayReminder = true;
+                user.ReceivePromo = seed.ReceivePromo;
+                user.UpdatedAt = DateTime.UtcNow;
+
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    throw new InvalidOperationException($"Cannot update seed user '{seed.Email}': {BuildIdentityErrorMessage(updateResult)}");
+                }
             }
 
-            user = new AppUserEntity
-            {
-                Id = seed.Id,
-                FullName = seed.FullName,
-                Email = seed.Email,
-                NormalizedEmail = AccountValueNormalizer.NormalizeEmail(seed.Email),
-                PhoneNumber = seed.PhoneNumber,
-                NormalizedPhoneNumber = AccountValueNormalizer.NormalizePhone(seed.PhoneNumber),
-                Role = seed.Role,
-                PlayArea = seed.PlayArea,
-                JoinedAt = seed.JoinedAt,
-                UpdatedAt = seed.JoinedAt,
-                IsActive = true,
-                IsPhoneVerified = true,
-                ReceiveBookingConfirm = true,
-                ReceivePlayReminder = true,
-                ReceivePromo = seed.ReceivePromo
-            };
-            user.PasswordHash = _passwordHasher.HashPassword(user, seed.Password);
+            await EnsureUserRoleAsync(user, seed.Role);
+        }
+    }
 
-            existingUsers.Add(user);
-            _context.Users.Add(user);
-            hasChanges = true;
+    private async Task EnsureUserRoleAsync(AppUserEntity user, string role)
+    {
+        var roles = await _userManager.GetRolesAsync(user);
+        foreach (var oldRole in roles.Where(item => item != role))
+        {
+            await _userManager.RemoveFromRoleAsync(user, oldRole);
         }
 
-        if (hasChanges)
+        if (!await _userManager.IsInRoleAsync(user, role))
         {
-            await _context.SaveChangesAsync(cancellationToken);
+            var result = await _userManager.AddToRoleAsync(user, role);
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException($"Cannot assign role '{role}' to '{user.Email}': {BuildIdentityErrorMessage(result)}");
+            }
         }
     }
 
@@ -269,6 +318,11 @@ public class ApplicationDbContextSeeder(ApplicationDbContext context, IPasswordH
         yield return new SeedAccount("user-player-bao", "Lê Quốc Bảo", "bao.player@courtbook.local", "0912000876", AppRoles.Player, "CourtBook@123", "Bình Thạnh", new DateTime(2026, 5, 18), false);
         yield return new SeedAccount("user-player-nhung", "Phạm Hồng Nhung", "nhung.player@courtbook.local", "0934000012", AppRoles.Player, "CourtBook@123", "Quận 10", new DateTime(2026, 5, 17), true);
         yield return new SeedAccount("user-player-tuan-anh", "Đặng Tuấn Anh", "tuananh.player@courtbook.local", "0976000455", AppRoles.Player, "CourtBook@123", "Quận 11", new DateTime(2026, 5, 16), false);
+    }
+
+    private static string BuildIdentityErrorMessage(IdentityResult result)
+    {
+        return string.Join("; ", result.Errors.Select(error => error.Description));
     }
 
     private sealed record SeedAccount(

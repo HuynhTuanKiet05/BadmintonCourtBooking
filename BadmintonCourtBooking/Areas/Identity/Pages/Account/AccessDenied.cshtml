@@ -1,0 +1,11 @@
+@page
+@model BadmintonCourtBooking.Areas.Identity.Pages.Account.AccessDeniedModel
+@{
+    ViewData["Title"] = "Không có quyền truy cập";
+}
+
+<section class="container" style="padding: 5rem 1rem; max-width: 760px;">
+    <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">Không có quyền truy cập</h1>
+    <p style="color: #64748b; margin-bottom: 1.5rem;">Tài khoản hiện tại không có quyền mở trang này.</p>
+    <a asp-controller="Home" asp-action="Index" asp-area="" class="btn btn-primary" style="text-decoration: none;">Về trang chủ</a>
+</section>

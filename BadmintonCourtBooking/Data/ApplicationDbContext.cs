@@ -1,11 +1,13 @@
 using BadmintonCourtBooking.Data.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BadmintonCourtBooking.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    : IdentityDbContext<AppUserEntity, IdentityRole, string>(options)
 {
-    public DbSet<AppUserEntity> Users => Set<AppUserEntity>();
     public DbSet<VenueEntity> Venues => Set<VenueEntity>();
     public DbSet<CourtEntity> Courts => Set<CourtEntity>();
     public DbSet<BookingEntity> Bookings => Set<BookingEntity>();
@@ -16,18 +18,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         modelBuilder.Entity<AppUserEntity>(entity =>
         {
-            entity.ToTable("Users");
-            entity.HasKey(x => x.Id);
             entity.Property(x => x.FullName).HasMaxLength(120).IsRequired();
-            entity.Property(x => x.Email).HasMaxLength(160).IsRequired();
-            entity.Property(x => x.NormalizedEmail).HasMaxLength(160).IsRequired();
-            entity.Property(x => x.PhoneNumber).HasMaxLength(30).IsRequired();
-            entity.Property(x => x.NormalizedPhoneNumber).HasMaxLength(30).IsRequired();
-            entity.Property(x => x.PasswordHash).HasMaxLength(512).IsRequired();
-            entity.Property(x => x.Role).HasMaxLength(20).IsRequired();
             entity.Property(x => x.PlayArea).HasMaxLength(120);
-            entity.HasIndex(x => x.NormalizedEmail).IsUnique();
-            entity.HasIndex(x => x.NormalizedPhoneNumber).IsUnique();
+            entity.Property(x => x.PhoneNumber).HasMaxLength(30);
+            entity.HasIndex(x => x.PhoneNumber);
         });
 
         modelBuilder.Entity<VenueEntity>(entity =>

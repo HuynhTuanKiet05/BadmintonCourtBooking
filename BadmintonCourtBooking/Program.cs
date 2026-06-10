@@ -1,9 +1,9 @@
 using BadmintonCourtBooking.Data;
 using BadmintonCourtBooking.Data.Entities;
 using BadmintonCourtBooking.Services;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,41 +12,48 @@ builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.AddService<RequireActiveUserFilter>();
 });
+builder.Services.AddRazorPages();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+});
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddAuthentication(options =>
+builder.Services
+    .AddDefaultIdentity<AppUserEntity>(options =>
     {
-        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.SignIn.RequireConfirmedAccount = false;
+        options.SignIn.RequireConfirmedEmail = false;
+        options.SignIn.RequireConfirmedPhoneNumber = false;
+        options.User.RequireUniqueEmail = true;
+        options.Password.RequiredLength = 8;
     })
-    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-    {
-        options.LoginPath = "/Account/Login";
-        options.AccessDeniedPath = "/Account/AccessDenied";
-        options.Cookie.Name = "CourtBook.Auth";
-        options.SlidingExpiration = true;
-    })
-    .AddCookie("ExternalCookie", options =>
-    {
-        options.Cookie.Name = "CourtBook.External";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-    })
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    options.Cookie.Name = "CourtBook.Auth";
+    options.SlidingExpiration = true;
+});
+builder.Services.AddAuthentication()
     .AddGoogle(options =>
     {
-        options.SignInScheme = "ExternalCookie";
+        options.SignInScheme = IdentityConstants.ExternalScheme;
         options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "mock-google-id";
         options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "mock-google-secret";
     })
     .AddFacebook(options =>
     {
-        options.SignInScheme = "ExternalCookie";
+        options.SignInScheme = IdentityConstants.ExternalScheme;
         options.AppId = builder.Configuration["Authentication:Facebook:AppId"] ?? "mock-facebook-id";
         options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"] ?? "mock-facebook-secret";
     });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<ApplicationDbContextSeeder>();
 builder.Services.AddScoped<RequireActiveUserFilter>();
-builder.Services.AddScoped<IPasswordHasher<AppUserEntity>, PasswordHasher<AppUserEntity>>();
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<AppUserEntity>, AppUserClaimsPrincipalFactory>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IVenueCatalogService, VenueCatalogService>();
@@ -84,6 +91,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+app.MapRazorPages();
 
 
 app.Run();

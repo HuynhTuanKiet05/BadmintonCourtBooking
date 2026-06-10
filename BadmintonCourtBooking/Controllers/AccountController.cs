@@ -3,9 +3,8 @@ using BadmintonCourtBooking.Data.Entities;
 using BadmintonCourtBooking.Extensions;
 using BadmintonCourtBooking.Models;
 using BadmintonCourtBooking.Services;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BadmintonCourtBooking.Controllers
@@ -14,11 +13,19 @@ namespace BadmintonCourtBooking.Controllers
     {
         private readonly IAccountService _accountService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly SignInManager<AppUserEntity> _signInManager;
+        private readonly UserManager<AppUserEntity> _userManager;
 
-        public AccountController(IAccountService accountService, ICurrentUserService currentUserService)
+        public AccountController(
+            IAccountService accountService,
+            ICurrentUserService currentUserService,
+            SignInManager<AppUserEntity> signInManager,
+            UserManager<AppUserEntity> userManager)
         {
             _accountService = accountService;
             _currentUserService = currentUserService;
+            _signInManager = signInManager;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -65,11 +72,11 @@ namespace BadmintonCourtBooking.Controllers
                 return View(model);
             }
 
-            await SignInAsync(result.Data, model.RememberMe);
+            await _signInManager.SignInAsync(result.Data, model.RememberMe);
 
             TempData["ToastMessage"] = result.Message;
             TempData["ToastType"] = "success";
-            return RedirectAfterAuthentication(model.ReturnUrl, result.Data.Role);
+            return await RedirectAfterAuthenticationAsync(model.ReturnUrl, result.Data);
         }
 
         [HttpGet]
@@ -110,11 +117,11 @@ namespace BadmintonCourtBooking.Controllers
                 return View(model);
             }
 
-            await SignInAsync(result.Data, true);
+            await _signInManager.SignInAsync(result.Data, isPersistent: true);
 
             TempData["ToastMessage"] = result.Message;
             TempData["ToastType"] = "success";
-            return RedirectAfterAuthentication(model.ReturnUrl, result.Data.Role);
+            return await RedirectAfterAuthenticationAsync(model.ReturnUrl, result.Data);
         }
 
         [HttpGet]
@@ -164,7 +171,7 @@ namespace BadmintonCourtBooking.Controllers
                 return View("Profile", model);
             }
 
-            await SignInAsync(result.Data, true);
+            await _signInManager.RefreshSignInAsync(result.Data);
 
             TempData["ToastMessage"] = result.Message;
             TempData["ToastType"] = "success";
@@ -215,7 +222,7 @@ namespace BadmintonCourtBooking.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await _signInManager.SignOutAsync();
             TempData["ToastMessage"] = "Đã đăng xuất tài khoản thành công.";
             TempData["ToastType"] = "success";
             return RedirectToAction("Index", "Home");
@@ -228,36 +235,12 @@ namespace BadmintonCourtBooking.Controllers
             return View();
         }
 
-        private async Task SignInAsync(AppUserEntity user, bool rememberMe)
-        {
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.NameIdentifier, user.Id),
-                new(ClaimTypes.Name, user.FullName),
-                new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.MobilePhone, user.PhoneNumber),
-                new(ClaimTypes.Role, user.Role)
-            };
-
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
-
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                principal,
-                new AuthenticationProperties
-                {
-                    IsPersistent = rememberMe,
-                    ExpiresUtc = rememberMe ? DateTimeOffset.UtcNow.AddDays(14) : null
-                });
-        }
-
         [HttpGet]
         [AllowAnonymous]
         public IActionResult ExternalLogin(string provider, string? returnUrl = null)
         {
             var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
-            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Challenge(properties, provider);
         }
 
@@ -265,19 +248,44 @@ namespace BadmintonCourtBooking.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, CancellationToken cancellationToken = default)
         {
-            var authResult = await HttpContext.AuthenticateAsync("ExternalCookie");
-            if (!authResult.Succeeded || authResult.Principal == null)
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info is null)
             {
                 TempData["ToastMessage"] = "Đăng nhập bằng mạng xã hội không thành công hoặc đã bị hủy.";
                 TempData["ToastType"] = "error";
                 return RedirectToAction(nameof(Login));
             }
 
-            var claims = authResult.Principal.Claims;
-            var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-            var name = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? "Người dùng mạng xã hội";
+            var linkedSignInResult = await _signInManager.ExternalLoginSignInAsync(
+                info.LoginProvider,
+                info.ProviderKey,
+                isPersistent: true,
+                bypassTwoFactor: true);
 
-            if (string.IsNullOrEmpty(email))
+            if (linkedSignInResult.Succeeded)
+            {
+                var linkedUser = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+                if (linkedUser is null || !linkedUser.IsActive)
+                {
+                    await _signInManager.SignOutAsync();
+                    TempData["ToastMessage"] = "Tài khoản của bạn đang bị khóa. Vui lòng liên hệ quản trị viên.";
+                    TempData["ToastType"] = "error";
+                    return RedirectToAction(nameof(Login));
+                }
+
+                linkedUser.LastSignInAt = DateTime.UtcNow;
+                linkedUser.UpdatedAt = DateTime.UtcNow;
+                await _userManager.UpdateAsync(linkedUser);
+
+                TempData["ToastMessage"] = $"Đăng nhập thành công! Chào mừng {linkedUser.FullName}!";
+                TempData["ToastType"] = "success";
+                return await RedirectAfterAuthenticationAsync(returnUrl, linkedUser);
+            }
+
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            var name = info.Principal.FindFirstValue(ClaimTypes.Name) ?? "Người dùng mạng xã hội";
+
+            if (string.IsNullOrWhiteSpace(email))
             {
                 TempData["ToastMessage"] = "Không thể lấy thông tin Email từ tài khoản của bạn.";
                 TempData["ToastType"] = "error";
@@ -300,28 +308,48 @@ namespace BadmintonCourtBooking.Controllers
                 return RedirectToAction(nameof(Login));
             }
 
-            await SignInAsync(user, true);
-            await HttpContext.SignOutAsync("ExternalCookie");
+            var addLoginResult = await _userManager.AddLoginAsync(user, info);
+            if (!addLoginResult.Succeeded)
+            {
+                var alreadyLinked = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+                if (alreadyLinked?.Id != user.Id)
+                {
+                    TempData["ToastMessage"] = "Tài khoản mạng xã hội này đã được liên kết với người dùng khác.";
+                    TempData["ToastType"] = "error";
+                    return RedirectToAction(nameof(Login));
+                }
+            }
+
+            await _signInManager.SignInAsync(user, isPersistent: true);
 
             TempData["ToastMessage"] = $"Đăng nhập thành công! Chào mừng {user.FullName}!";
             TempData["ToastType"] = "success";
 
-            return RedirectAfterAuthentication(returnUrl, user.Role);
+            return await RedirectAfterAuthenticationAsync(returnUrl, user);
         }
 
-        private IActionResult RedirectAfterAuthentication(string? returnUrl, string? role = null)
+        private IActionResult RedirectAfterAuthentication(string? returnUrl)
         {
             if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
                 return LocalRedirect(returnUrl);
             }
 
-            var resolvedRole = role ?? _currentUserService.User?.Role;
-            return resolvedRole switch
+            return User.IsInRole(AppRoles.Admin)
+                ? RedirectToAction("Index", "Admin")
+                : RedirectToAction("Index", "Home");
+        }
+
+        private async Task<IActionResult> RedirectAfterAuthenticationAsync(string? returnUrl, AppUserEntity user)
+        {
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
-                AppRoles.Admin => RedirectToAction("Index", "Admin"),
-                _ => RedirectToAction("Index", "Home")
-            };
+                return LocalRedirect(returnUrl);
+            }
+
+            return await _userManager.IsInRoleAsync(user, AppRoles.Admin)
+                ? RedirectToAction("Index", "Admin")
+                : RedirectToAction("Index", "Home");
         }
 
         private async Task PopulateProfileMetadataAsync(string userId, ProfileViewModel model, CancellationToken cancellationToken)
