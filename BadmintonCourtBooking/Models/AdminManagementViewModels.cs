@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace BadmintonCourtBooking.Models;
 
@@ -154,6 +155,9 @@ public class AdminManagedVenueViewModel
     public int PriceFrom { get; set; }
     public int ActiveCourtCount { get; set; }
     public int TotalCourtCount { get; set; }
+    public string? ImagePath { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
     public List<AdminCourtViewModel> Courts { get; set; } = new();
 
     public string StatusLabel => Status switch
@@ -230,6 +234,11 @@ public class AdminVenueInputModel
     [Required(ErrorMessage = "Vui lòng nhập mô tả cụm sân.")]
     [StringLength(2000, ErrorMessage = "Mô tả tối đa 2000 ký tự.")]
     public string Description { get; set; } = string.Empty;
+
+    public IFormFile? Image { get; set; }
+    public string? ExistingImagePath { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
 }
 
 public class AdminCourtInputModel

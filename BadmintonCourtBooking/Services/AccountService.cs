@@ -7,10 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BadmintonCourtBooking.Services;
 
-public class AccountService(ApplicationDbContext context, UserManager<AppUserEntity> userManager) : IAccountService
+public class AccountService(ApplicationDbContext context, UserManager<AppUserEntity> userManager, IWebHostEnvironment environment) : IAccountService
 {
     private readonly ApplicationDbContext _context = context;
     private readonly UserManager<AppUserEntity> _userManager = userManager;
+    private readonly IWebHostEnvironment _environment = environment;
 
     public async Task<OperationResult<AppUserEntity>> LoginAsync(LoginViewModel model, CancellationToken cancellationToken = default)
     {
@@ -122,7 +123,8 @@ public class AccountService(ApplicationDbContext context, UserManager<AppUserEnt
             IsPhoneVerified = user.PhoneNumberConfirmed,
             ReceiveBookingConfirm = user.ReceiveBookingConfirm,
             ReceivePlayReminder = user.ReceivePlayReminder,
-            ReceivePromo = user.ReceivePromo
+            ReceivePromo = user.ReceivePromo,
+            AvatarUrl = string.IsNullOrWhiteSpace(user.AvatarPath) ? null : user.AvatarPath
         };
     }
 
@@ -249,6 +251,63 @@ public class AccountService(ApplicationDbContext context, UserManager<AppUserEnt
         }
 
         return OperationResult<AppUserEntity>.Success(newUser, "Tạo tài khoản người chơi mới thành công.");
+    }
+
+    private static readonly HashSet<string> AllowedAvatarExtensions = new(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".webp" };
+    private const long MaxAvatarSizeBytes = 2 * 1024 * 1024; // 2 MB
+
+    public async Task<OperationResult<string>> UploadAvatarAsync(string userId, IFormFile file, CancellationToken cancellationToken = default)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return OperationResult<string>.Fail("Vui lòng chọn một tập tin ảnh.");
+        }
+
+        if (file.Length > MaxAvatarSizeBytes)
+        {
+            return OperationResult<string>.Fail("Ảnh đại diện không được vượt quá 2 MB.");
+        }
+
+        var extension = Path.GetExtension(file.FileName);
+        if (!AllowedAvatarExtensions.Contains(extension))
+        {
+            return OperationResult<string>.Fail("Chỉ chấp nhận ảnh định dạng JPG, PNG hoặc WebP.");
+        }
+
+        var user = await FindByIdAsync(userId, cancellationToken);
+        if (user is null)
+        {
+            return OperationResult<string>.Fail("Không tìm thấy tài khoản.");
+        }
+
+        // Delete old avatar if exists
+        if (!string.IsNullOrWhiteSpace(user.AvatarPath))
+        {
+            var oldPhysicalPath = Path.Combine(_environment.WebRootPath, user.AvatarPath.TrimStart('/'));
+            if (File.Exists(oldPhysicalPath))
+            {
+                File.Delete(oldPhysicalPath);
+            }
+        }
+
+        // Save new avatar
+        var uploadsDir = Path.Combine(_environment.WebRootPath, "uploads", "avatars");
+        Directory.CreateDirectory(uploadsDir);
+
+        var fileName = $"{userId}{extension}";
+        var physicalPath = Path.Combine(uploadsDir, fileName);
+
+        await using (var stream = new FileStream(physicalPath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream, cancellationToken);
+        }
+
+        var relativePath = $"/uploads/avatars/{fileName}";
+        user.AvatarPath = relativePath;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        return OperationResult<string>.Success(relativePath, "Cập nhật ảnh đại diện thành công!");
     }
 
     private async Task<AppUserEntity?> FindByEmailOrPhoneAsync(string lookup, CancellationToken cancellationToken)

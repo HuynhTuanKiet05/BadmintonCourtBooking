@@ -37,6 +37,11 @@ namespace BadmintonCourtBooking.Controllers
             return View(featuredVenues);
         }
 
+        public IActionResult Terms()
+        {
+            return View();
+        }
+
         public IActionResult Privacy()
         {
             return View();

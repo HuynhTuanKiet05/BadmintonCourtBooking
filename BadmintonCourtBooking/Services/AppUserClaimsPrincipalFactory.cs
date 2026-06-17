@@ -27,6 +27,11 @@ public class AppUserClaimsPrincipalFactory(
             identity.AddClaim(new Claim(ClaimTypes.MobilePhone, user.PhoneNumber));
         }
 
+        if (!string.IsNullOrWhiteSpace(user.AvatarPath))
+        {
+            identity.AddClaim(new Claim("AvatarPath", user.AvatarPath));
+        }
+
         return identity;
     }
 }

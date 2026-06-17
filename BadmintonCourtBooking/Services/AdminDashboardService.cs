@@ -2,6 +2,8 @@ using System.Globalization;
 using BadmintonCourtBooking.Data;
 using BadmintonCourtBooking.Data.Entities;
 using BadmintonCourtBooking.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,11 +12,13 @@ namespace BadmintonCourtBooking.Services;
 public class AdminDashboardService(
     ApplicationDbContext context,
     ICurrentUserService currentUserService,
-    UserManager<AppUserEntity> userManager) : IAdminDashboardService
+    UserManager<AppUserEntity> userManager,
+    IWebHostEnvironment environment) : IAdminDashboardService
 {
     private readonly ApplicationDbContext _context = context;
     private readonly ICurrentUserService _currentUserService = currentUserService;
     private readonly UserManager<AppUserEntity> _userManager = userManager;
+    private readonly IWebHostEnvironment _environment = environment;
 
     public async Task<AdminDashboardViewModel> GetDashboardAsync(CancellationToken cancellationToken = default)
     {
@@ -198,9 +202,23 @@ public class AdminDashboardService(
             return OperationResult<string>.Fail("Đã có một cụm sân trùng tên và địa chỉ này.");
         }
 
+        var venueId = $"venue-{Guid.NewGuid():N}";
+        string? imagePath = null;
+        if (model.Image is not null && model.Image.Length > 0)
+        {
+            try
+            {
+                imagePath = await SaveVenueImageAsync(venueId, model.Image, null, cancellationToken);
+            }
+            catch (ArgumentException ex)
+            {
+                return OperationResult<string>.Fail(ex.Message);
+            }
+        }
+
         var venue = new VenueEntity
         {
-            Id = $"venue-{Guid.NewGuid():N}",
+            Id = venueId,
             Name = name,
             District = district,
             Address = address,
@@ -214,6 +232,9 @@ public class AdminDashboardService(
             ResponseFast = true,
             HasSlotsToday = false,
             Status = VenueStatus.Approved,
+            ImagePath = imagePath,
+            Latitude = model.Latitude,
+            Longitude = model.Longitude,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -260,6 +281,19 @@ public class AdminDashboardService(
             return OperationResult<string>.Fail("Đã có cụm sân khác dùng cùng tên và địa chỉ này.");
         }
 
+        if (model.Image is not null && model.Image.Length > 0)
+        {
+            try
+            {
+                var newPath = await SaveVenueImageAsync(venue.Id, model.Image, venue.ImagePath, cancellationToken);
+                venue.ImagePath = newPath;
+            }
+            catch (ArgumentException ex)
+            {
+                return OperationResult<string>.Fail(ex.Message);
+            }
+        }
+
         venue.Name = name;
         venue.District = district;
         venue.Address = address;
@@ -267,6 +301,8 @@ public class AdminDashboardService(
         venue.ContactName = contactName;
         venue.ContactPhone = contactPhone;
         venue.Description = description;
+        venue.Latitude = model.Latitude;
+        venue.Longitude = model.Longitude;
         venue.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
@@ -361,7 +397,10 @@ public class AdminDashboardService(
 
     public async Task<OperationResult> ApproveBookingAsync(string id, CancellationToken cancellationToken = default)
     {
-        var booking = await _context.Bookings.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+        var booking = await _context.Bookings
+            .Include(b => b.Court)
+                .ThenInclude(c => c!.Venue)
+            .FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
         if (booking is null)
         {
             return OperationResult.Fail("Không tìm thấy thông tin lịch đặt sân.");
@@ -380,6 +419,23 @@ public class AdminDashboardService(
         booking.Status = BookingStatus.Confirmed;
         booking.CancelledAt = null;
         booking.CancelReason = null;
+
+        if (!string.IsNullOrEmpty(booking.PlayerUserId))
+        {
+            var venueName = booking.Court?.Venue?.Name ?? "sân cầu lông";
+            var courtName = booking.Court?.Name ?? "Sân";
+            var playerNotif = new NotificationEntity
+            {
+                Id = $"notif-{Guid.NewGuid():N}",
+                UserId = booking.PlayerUserId,
+                Title = "Yêu cầu đặt sân được duyệt!",
+                Content = $"Sân {venueName} - {courtName} lúc {booking.StartAt.ToString("HH:mm dd/MM")} đã được xác nhận.",
+                CreatedAt = DateTime.UtcNow,
+                IsRead = false
+            };
+            _context.Notifications.Add(playerNotif);
+        }
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return OperationResult.Success($"Đã duyệt lịch đặt sân thành công cho {booking.CustomerName}.");
@@ -387,7 +443,10 @@ public class AdminDashboardService(
 
     public async Task<OperationResult> RejectBookingAsync(string id, CancellationToken cancellationToken = default)
     {
-        var booking = await _context.Bookings.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+        var booking = await _context.Bookings
+            .Include(b => b.Court)
+                .ThenInclude(c => c!.Venue)
+            .FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
         if (booking is null)
         {
             return OperationResult.Fail("Không tìm thấy thông tin lịch đặt sân.");
@@ -406,6 +465,23 @@ public class AdminDashboardService(
         booking.Status = BookingStatus.Cancelled;
         booking.CancelledAt = DateTime.UtcNow;
         booking.CancelReason = "Từ chối bởi quản trị viên";
+
+        if (!string.IsNullOrEmpty(booking.PlayerUserId))
+        {
+            var venueName = booking.Court?.Venue?.Name ?? "sân cầu lông";
+            var courtName = booking.Court?.Name ?? "Sân";
+            var playerNotif = new NotificationEntity
+            {
+                Id = $"notif-{Guid.NewGuid():N}",
+                UserId = booking.PlayerUserId,
+                Title = "Yêu cầu đặt sân bị từ chối",
+                Content = $"Lịch đặt sân tại {venueName} ({courtName}) lúc {booking.StartAt.ToString("HH:mm dd/MM")} đã bị từ chối.",
+                CreatedAt = DateTime.UtcNow,
+                IsRead = false
+            };
+            _context.Notifications.Add(playerNotif);
+        }
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return OperationResult.Success($"Đã từ chối lịch đặt sân của {booking.CustomerName}.");
@@ -559,6 +635,9 @@ public class AdminDashboardService(
                 ?? 0,
             ActiveCourtCount = activeCourts.Count,
             TotalCourtCount = venue.Courts.Count,
+            ImagePath = venue.ImagePath,
+            Latitude = venue.Latitude,
+            Longitude = venue.Longitude,
             Courts = venue.Courts
                 .OrderByDescending(court => court.IsActive)
                 .ThenBy(court => court.Name)
@@ -625,4 +704,53 @@ public class AdminDashboardService(
         VenueStatus.Approved => 1,
         _ => 2
     };
+
+    private async Task<string?> SaveVenueImageAsync(string venueId, IFormFile image, string? oldImagePath, CancellationToken cancellationToken)
+    {
+        if (image is null || image.Length == 0)
+        {
+            return oldImagePath;
+        }
+
+        if (image.Length > 5 * 1024 * 1024)
+        {
+            throw new ArgumentException("Ảnh cụm sân không được vượt quá 5 MB.");
+        }
+
+        var extension = Path.GetExtension(image.FileName);
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        if (!allowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Chỉ chấp nhận ảnh định dạng JPG, PNG hoặc WebP.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(oldImagePath))
+        {
+            var oldPhysicalPath = Path.Combine(_environment.WebRootPath, oldImagePath.TrimStart('/'));
+            if (File.Exists(oldPhysicalPath))
+            {
+                try
+                {
+                    File.Delete(oldPhysicalPath);
+                }
+                catch
+                {
+                    // Ignore
+                }
+            }
+        }
+
+        var uploadsDir = Path.Combine(_environment.WebRootPath, "uploads", "venues");
+        Directory.CreateDirectory(uploadsDir);
+
+        var fileName = $"{venueId}_{Guid.NewGuid():N}{extension}";
+        var physicalPath = Path.Combine(uploadsDir, fileName);
+
+        await using (var stream = new FileStream(physicalPath, FileMode.Create))
+        {
+            await image.CopyToAsync(stream, cancellationToken);
+        }
+
+        return $"/uploads/venues/{fileName}";
+    }
 }

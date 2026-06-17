@@ -1,0 +1,171 @@
+@{
+    ViewData["Title"] = "Điều khoản dịch vụ";
+}
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <style>
+        .legal-hero {
+            background: linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%);
+            color: #fff;
+            padding: 3.5rem 0 2.5rem;
+            text-align: center;
+        }
+        .legal-hero h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .legal-hero p {
+            color: #a7f3d0;
+            font-size: 0.95rem;
+        }
+        .legal-content {
+            max-width: 820px;
+            margin: -1.5rem auto 3rem;
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            padding: 2.5rem 2rem;
+            border: 1px solid #e2e8f0;
+        }
+        .legal-content h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #047857;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ecfdf5;
+        }
+        .legal-content h2:first-of-type {
+            margin-top: 0;
+        }
+        .legal-content p, .legal-content li {
+            font-size: 0.9rem;
+            line-height: 1.75;
+            color: #475569;
+        }
+        .legal-content ul {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .legal-content li {
+            margin-bottom: 0.35rem;
+        }
+        .legal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: #ecfdf5;
+            color: #047857;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            margin-bottom: 0.75rem;
+        }
+        .legal-update {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+}
+
+<div class="legal-hero">
+    <div class="container">
+        <div class="legal-badge">
+            <i data-lucide="file-text" style="width:14px;height:14px"></i>
+            Pháp lý
+        </div>
+        <h1>Điều khoản dịch vụ</h1>
+        <p>Vui lòng đọc kỹ các điều khoản trước khi sử dụng dịch vụ Đặt Sân Cầu Lông.</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="legal-content">
+        <h2>1. Giới thiệu</h2>
+        <p>
+            Chào mừng bạn đến với <strong>Đặt Sân Cầu Lông (CourtBook)</strong> — nền tảng đặt sân cầu lông trực tuyến tại TP.HCM.
+            Bằng việc truy cập và sử dụng dịch vụ, bạn đồng ý tuân thủ các điều khoản và điều kiện được nêu dưới đây.
+        </p>
+
+        <h2>2. Định nghĩa</h2>
+        <ul>
+            <li><strong>"Nền tảng"</strong>: Website và ứng dụng Đặt Sân Cầu Lông.</li>
+            <li><strong>"Người dùng"</strong>: Bất kỳ cá nhân nào truy cập và sử dụng Nền tảng.</li>
+            <li><strong>"Người chơi"</strong>: Người dùng đăng ký tài khoản để tìm kiếm và đặt sân.</li>
+            <li><strong>"Quản trị viên"</strong>: Người quản lý hệ thống và các cụm sân trên Nền tảng.</li>
+        </ul>
+
+        <h2>3. Tài khoản người dùng</h2>
+        <ul>
+            <li>Bạn phải cung cấp thông tin chính xác và đầy đủ khi đăng ký tài khoản.</li>
+            <li>Bạn chịu trách nhiệm bảo mật thông tin đăng nhập của mình.</li>
+            <li>Mỗi người dùng chỉ được phép sở hữu một tài khoản duy nhất.</li>
+            <li>Hệ thống có quyền khóa hoặc xóa tài khoản vi phạm mà không cần thông báo trước.</li>
+        </ul>
+
+        <h2>4. Quy trình đặt sân</h2>
+        <ul>
+            <li>Người chơi chọn cụm sân, sân con, ngày và khung giờ muốn đặt.</li>
+            <li>Đơn đặt sân sẽ ở trạng thái <strong>"Chờ duyệt"</strong> cho đến khi được Quản trị viên xác nhận.</li>
+            <li>Quản trị viên có quyền phê duyệt hoặc từ chối đơn đặt sân.</li>
+            <li>Người chơi có thể hủy đơn đặt sân trước khi được phê duyệt.</li>
+        </ul>
+
+        <h2>5. Quy định hủy đặt sân</h2>
+        <ul>
+            <li>Người chơi có thể hủy đơn đặt sân ở trạng thái <strong>"Chờ duyệt"</strong> hoặc <strong>"Đã xác nhận"</strong>.</li>
+            <li>Việc hủy đặt sân quá nhiều lần có thể ảnh hưởng đến tỉ lệ đến sân (Show-up Rate) của bạn.</li>
+            <li>Quản trị viên có quyền từ chối đơn đặt sân của người dùng có tỉ lệ đến sân thấp.</li>
+        </ul>
+
+        <h2>6. Quyền và nghĩa vụ của Nền tảng</h2>
+        <ul>
+            <li>Đảm bảo hệ thống hoạt động ổn định và an toàn.</li>
+            <li>Bảo vệ thông tin cá nhân của người dùng theo Chính sách bảo mật.</li>
+            <li>Có quyền tạm dừng dịch vụ để bảo trì hệ thống khi cần thiết.</li>
+            <li>Không chịu trách nhiệm về chất lượng cơ sở vật chất tại các cụm sân.</li>
+        </ul>
+
+        <h2>7. Hành vi bị cấm</h2>
+        <ul>
+            <li>Sử dụng Nền tảng cho mục đích bất hợp pháp.</li>
+            <li>Đặt sân với thông tin giả mạo hoặc không chính xác.</li>
+            <li>Can thiệp, phá hoại hoặc gây gián đoạn hệ thống.</li>
+            <li>Chia sẻ tài khoản cho người khác sử dụng.</li>
+        </ul>
+
+        <h2>8. Giới hạn trách nhiệm</h2>
+        <p>
+            Nền tảng cung cấp dịch vụ "nguyên trạng" (as-is). Chúng tôi không đảm bảo rằng dịch vụ sẽ hoạt động
+            liên tục, không có lỗi hoặc đáp ứng tất cả yêu cầu của người dùng. Trong mọi trường hợp, trách nhiệm
+            của Nền tảng không vượt quá số tiền người dùng đã thanh toán cho dịch vụ liên quan.
+        </p>
+
+        <h2>9. Thay đổi điều khoản</h2>
+        <p>
+            Chúng tôi có quyền sửa đổi các điều khoản này bất kỳ lúc nào. Mọi thay đổi sẽ được thông báo trên Nền tảng.
+            Việc tiếp tục sử dụng dịch vụ sau khi có thay đổi đồng nghĩa với việc bạn chấp nhận các điều khoản mới.
+        </p>
+
+        <h2>10. Liên hệ</h2>
+        <p>
+            Nếu bạn có câu hỏi về Điều khoản dịch vụ, vui lòng liên hệ chúng tôi qua email
+            <a href="mailto:support@courtbook.vn" class="text-emerald-700 fw-semibold">support@courtbook.vn</a>
+            hoặc hotline <strong>1900 xxxx</strong>.
+        </p>
+
+        <div class="legal-update">
+            <i data-lucide="clock" style="width:14px;height:14px;vertical-align:middle;margin-right:4px"></i>
+            Cập nhật lần cuối: Tháng 6, 2026
+        </div>
+    </div>
+</div>

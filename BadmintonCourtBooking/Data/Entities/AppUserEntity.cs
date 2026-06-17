@@ -6,6 +6,7 @@ public class AppUserEntity : IdentityUser
 {
     public string FullName { get; set; } = string.Empty;
     public string PlayArea { get; set; } = string.Empty;
+    public string? AvatarPath { get; set; }
     public bool IsActive { get; set; } = true;
     public bool ReceiveBookingConfirm { get; set; } = true;
     public bool ReceivePlayReminder { get; set; } = true;

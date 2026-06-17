@@ -23,6 +23,7 @@ public class ApplicationDbContextSeeder(
         await SeedVenuesAsync(cancellationToken);
         await SeedBookingsAsync(cancellationToken);
         await SyncBookingPlayersAsync(cancellationToken);
+        await SeedNotificationsAsync(cancellationToken);
     }
 
     private async Task SeedRolesAsync()
@@ -125,8 +126,29 @@ public class ApplicationDbContextSeeder(
 
     private async Task SeedVenuesAsync(CancellationToken cancellationToken)
     {
-        if (await _context.Venues.AnyAsync(cancellationToken))
+        var existingVenues = await _context.Venues.ToListAsync(cancellationToken);
+        if (existingVenues.Count > 0)
         {
+            var hasChanges = false;
+            foreach (var venue in existingVenues)
+            {
+                var seedVenue = MockData.Venues.FirstOrDefault(v => v.Id == venue.Id);
+                if (seedVenue != null)
+                {
+                    var mapped = MapApprovedVenue(seedVenue);
+                    if (venue.Latitude != mapped.Latitude || venue.Longitude != mapped.Longitude || venue.ImagePath != mapped.ImagePath)
+                    {
+                        venue.Latitude = mapped.Latitude;
+                        venue.Longitude = mapped.Longitude;
+                        venue.ImagePath = mapped.ImagePath;
+                        hasChanges = true;
+                    }
+                }
+            }
+            if (hasChanges)
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+            }
             return;
         }
 
@@ -215,6 +237,21 @@ public class ApplicationDbContextSeeder(
     private static VenueEntity MapApprovedVenue(Venue venue)
     {
         var (contactName, contactPhone) = ResolveContact(venue.Id);
+        var imagePath = venue.Id switch
+        {
+            "v1" or "v2" or "v4" or "v6" => $"/uploads/venues/{venue.Id}.png",
+            _ => null
+        };
+        var (latitude, longitude) = venue.Id switch
+        {
+            "v1" => (10.7679, 106.6543), // Phu Tho Stadium (District 11)
+            "v2" => (10.7788, 106.6432), // Tan Binh Badminton Hub
+            "v3" => (10.8094, 106.6975), // Binh Thanh
+            "v4" => (10.7719, 106.6664), // Quan 10 Sport Center
+            "v5" => (10.8242, 106.6804), // Go Vap
+            "v6" => (10.8524, 106.7716), // Thu Duc Smash Arena
+            _ => (null as double?, null as double?)
+        };
 
         return new VenueEntity
         {
@@ -232,6 +269,9 @@ public class ApplicationDbContextSeeder(
             ResponseFast = venue.ResponseFast,
             HasSlotsToday = venue.HasSlotsToday,
             Status = VenueStatus.Approved,
+            ImagePath = imagePath,
+            Latitude = latitude,
+            Longitude = longitude,
             CreatedAt = DateTime.UtcNow.AddDays(-14),
             UpdatedAt = DateTime.UtcNow.AddDays(-2)
         };
@@ -338,5 +378,47 @@ public class ApplicationDbContextSeeder(
     {
         public DateTime JoinedAt { get; init; } = joinedAt;
         public bool ReceivePromo { get; init; } = receivePromo;
+    }
+
+    private async Task SeedNotificationsAsync(CancellationToken cancellationToken)
+    {
+        if (await _context.Notifications.AnyAsync(cancellationToken))
+        {
+            return;
+        }
+
+        var notifications = new List<NotificationEntity>
+        {
+            new()
+            {
+                Id = "notif-1",
+                UserId = DemoDataConstants.DemoPlayerUserId,
+                Title = "Yêu cầu đặt sân được duyệt!",
+                Content = "Sân Phú Thọ - Sân VIP lúc 19:00 đã được xác nhận.",
+                CreatedAt = DateTime.UtcNow.AddMinutes(-30),
+                IsRead = false
+            },
+            new()
+            {
+                Id = "notif-2",
+                UserId = DemoDataConstants.DemoPlayerUserId,
+                Title = "Lịch chơi sắp diễn ra",
+                Content = "Lịch chơi tại Tân Bình Badminton Hub bắt đầu sau 1 tiếng.",
+                CreatedAt = DateTime.UtcNow.AddHours(-2),
+                IsRead = false
+            },
+            new()
+            {
+                Id = "notif-3",
+                UserId = DemoDataConstants.DemoAdminUserId,
+                Title = "Yêu cầu đặt sân mới",
+                Content = "Người chơi Nguyễn Minh Khoa đã gửi yêu cầu đặt Sân VIP tại Sân Cầu Lông Phú Thọ.",
+                CreatedAt = DateTime.UtcNow.AddMinutes(-5),
+                IsRead = false
+            }
+        };
+
+        await _context.Notifications.AddRangeAsync(notifications, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

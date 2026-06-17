@@ -62,6 +62,10 @@ namespace BadmintonCourtBooking.Models
         public string Role { get; set; } = "player";
 
         public string? ReturnUrl { get; set; }
+
+        [Required(ErrorMessage = "Bạn phải đồng ý với Điều khoản dịch vụ và Chính sách bảo mật.")]
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Bạn phải đồng ý với Điều khoản dịch vụ và Chính sách bảo mật.")]
+        public bool AgreeTerms { get; set; }
     }
 
     public class ProfileViewModel
@@ -109,5 +113,8 @@ namespace BadmintonCourtBooking.Models
         public bool ReceiveBookingConfirm { get; set; } = true;
         public bool ReceivePlayReminder { get; set; } = true;
         public bool ReceivePromo { get; set; } = false;
+
+        // Avatar
+        public string? AvatarUrl { get; set; }
     }
 }

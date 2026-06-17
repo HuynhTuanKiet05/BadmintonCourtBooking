@@ -43,11 +43,22 @@ public class VenueCatalogService(ApplicationDbContext context) : IVenueCatalogSe
             query = query.Where(venue => venue.District == criteria.District);
         }
 
-        query = query.Where(venue => venue.Courts.Any(court => court.IsActive && court.PricePerHour <= criteria.MaxPrice));
+        query = query.Where(venue => venue.Courts.Any(court => court.IsActive && court.PricePerHour >= criteria.MinPrice && court.PricePerHour <= criteria.MaxPrice));
 
         var venues = (await query.ToListAsync(cancellationToken))
             .Select(MapVenue)
             .ToList();
+
+        if (criteria.UserLat.HasValue && criteria.UserLng.HasValue)
+        {
+            foreach (var venue in venues)
+            {
+                if (venue.Latitude.HasValue && venue.Longitude.HasValue)
+                {
+                    venue.DistanceKm = CalculateDistance(criteria.UserLat.Value, criteria.UserLng.Value, venue.Latitude.Value, venue.Longitude.Value);
+                }
+            }
+        }
 
         if (criteria.Hours != "any")
         {
@@ -148,6 +159,9 @@ public class VenueCatalogService(ApplicationDbContext context) : IVenueCatalogSe
             ResponseFast = record.ResponseFast,
             HasSlotsToday = HasAvailableSlot(record, DateTime.Today),
             Description = record.Description,
+            ImageUrl = record.ImagePath,
+            Latitude = record.Latitude,
+            Longitude = record.Longitude,
             PriceFrom = activeCourts.Min(court => (int?)court.PricePerHour) ?? 0,
             Courts = activeCourts.Select(court => new Court
             {
@@ -171,6 +185,11 @@ public class VenueCatalogService(ApplicationDbContext context) : IVenueCatalogSe
             "rating-desc" => venues
                 .OrderByDescending(venue => venue.Rating)
                 .ThenBy(venue => venue.PriceFrom)
+                .ThenBy(venue => venue.Name)
+                .ToList(),
+            "distance" => venues
+                .OrderBy(venue => venue.DistanceKm ?? double.MaxValue)
+                .ThenByDescending(venue => venue.Rating)
                 .ThenBy(venue => venue.Name)
                 .ToList(),
             _ => SortByRelevance(venues, criteria.Query)
@@ -280,5 +299,23 @@ public class VenueCatalogService(ApplicationDbContext context) : IVenueCatalogSe
         return overlappingBookings.All(item => item.Status == BookingStatus.Pending)
             ? SlotStatus.Pending
             : SlotStatus.Booked;
+    }
+
+    private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+    {
+        var dLat = ToRadians(lat2 - lat1);
+        var dLon = ToRadians(lon2 - lon1);
+
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
+                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return 6371 * c;
+    }
+
+    private static double ToRadians(double val)
+    {
+        return (Math.PI / 180) * val;
     }
 }

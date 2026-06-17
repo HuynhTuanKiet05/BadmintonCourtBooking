@@ -12,5 +12,6 @@ public interface IAccountService
     Task<OperationResult<AppUserEntity>> UpdateProfileAsync(string userId, ProfileViewModel model, CancellationToken cancellationToken = default);
     Task<OperationResult> ChangePasswordAsync(string userId, string currentPassword, string newPassword, CancellationToken cancellationToken = default);
     Task<OperationResult> UpdateNotificationsAsync(string userId, bool receiveConfirm, bool receiveReminder, bool receivePromo, CancellationToken cancellationToken = default);
+    Task<OperationResult<string>> UploadAvatarAsync(string userId, IFormFile file, CancellationToken cancellationToken = default);
     Task<OperationResult<AppUserEntity>> GetOrCreateExternalUserAsync(string email, string fullName, CancellationToken cancellationToken = default);
 }

@@ -19,6 +19,9 @@ public class VenueEntity
     public bool HasSlotsToday { get; set; }
     public VenueStatus Status { get; set; } = VenueStatus.Approved;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string? ImagePath { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public ICollection<CourtEntity> Courts { get; set; } = new List<CourtEntity>();
 }

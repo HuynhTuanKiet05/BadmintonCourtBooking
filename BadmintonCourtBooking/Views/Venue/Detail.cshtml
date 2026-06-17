@@ -29,11 +29,18 @@
     </a>
 
     <!-- Venue Hero Header -->
-    <div class="venue-hero mb-6">
-        <div class="venue-hero-overlay"></div>
-        <div class="absolute inset-0 pointer-events-none text-white/5">
-            @await Html.PartialAsync("_CourtLines")
-        </div>
+    <div class="venue-hero mb-6" style="@(string.IsNullOrEmpty(Model.Venue.ImageUrl) ? "" : $"background-image: url('{Model.Venue.ImageUrl}'); background-size: cover; background-position: center;")">
+        @if (string.IsNullOrEmpty(Model.Venue.ImageUrl))
+        {
+            <div class="venue-hero-overlay"></div>
+            <div class="absolute inset-0 pointer-events-none text-white/5">
+                @await Html.PartialAsync("_CourtLines")
+            </div>
+        }
+        else
+        {
+            <div class="venue-hero-overlay" style="background: linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 100%);"></div>
+        }
         <div style="position: relative; z-index: 2; height: 100%; display: flex; align-items: flex-end;">
             <div class="flex-between w-full flex-wrap gap-4">
                 <div>

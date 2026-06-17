@@ -276,8 +276,16 @@ document.addEventListener('DOMContentLoaded', function () {
         bookingStartTimeInput.value = selectedSlot.time || '';
 
         modalSubmitBtn.disabled = true;
-        modalSubmitBtn.textContent = 'Đang gửi...';
-        bookingForm.submit();
+        modalSubmitBtn.textContent = 'Kết nối cổng thanh toán...';
+
+        setTimeout(function () {
+            modalSubmitBtn.textContent = 'Thanh toán thành công!';
+            
+            setTimeout(function () {
+                modalSubmitBtn.textContent = 'Đang tạo lịch đặt...';
+                bookingForm.submit();
+            }, 1000);
+        }, 1500);
     });
 
     // Auto-select slot from URL parameters if present

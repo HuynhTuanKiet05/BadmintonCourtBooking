@@ -6,6 +6,7 @@ using BadmintonCourtBooking.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BadmintonCourtBooking.Controllers
 {
@@ -30,7 +31,7 @@ namespace BadmintonCourtBooking.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Login(string role = "player", string? returnUrl = null, bool locked = false)
+        public IActionResult Login(string role = "player", string? returnUrl = null, bool locked = false, bool remoteError = false)
         {
             if (User.Identity?.IsAuthenticated == true)
             {
@@ -40,6 +41,11 @@ namespace BadmintonCourtBooking.Controllers
             if (locked)
             {
                 TempData["ToastMessage"] = "Tài khoản của bạn đang bị khóa. Vui lòng liên hệ quản trị viên Đặt Sân Cầu Lông.";
+                TempData["ToastType"] = "error";
+            }
+            else if (remoteError)
+            {
+                TempData["ToastMessage"] = "Đăng nhập bằng mạng xã hội không thành công hoặc đã bị hủy.";
                 TempData["ToastType"] = "error";
             }
 
@@ -119,7 +125,7 @@ namespace BadmintonCourtBooking.Controllers
 
             await _signInManager.SignInAsync(result.Data, isPersistent: true);
 
-            TempData["ToastMessage"] = result.Message;
+            TempData["ToastMessage"] = $"{result.Message} Một email xác nhận đã được gửi đến {model.Email}. Vui lòng kiểm tra hộp thư.";
             TempData["ToastType"] = "success";
             return await RedirectAfterAuthenticationAsync(model.ReturnUrl, result.Data);
         }
@@ -215,6 +221,34 @@ namespace BadmintonCourtBooking.Controllers
 
             var result = await _accountService.UpdateNotificationsAsync(currentUser.UserId, receiveConfirm, receiveReminder, receivePromo, cancellationToken);
             return Json(new { success = result.Succeeded, message = result.Message });
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadAvatar(IFormFile avatar, CancellationToken cancellationToken)
+        {
+            var currentUser = _currentUserService.User;
+            if (currentUser is null)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            var result = await _accountService.UploadAvatarAsync(currentUser.UserId, avatar, cancellationToken);
+            TempData["ToastMessage"] = result.Message;
+            TempData["ToastType"] = result.Succeeded ? "success" : "error";
+
+            if (result.Succeeded)
+            {
+                // Refresh sign-in to update avatar claim
+                var user = await _userManager.FindByIdAsync(currentUser.UserId);
+                if (user is not null)
+                {
+                    await _signInManager.RefreshSignInAsync(user);
+                }
+            }
+
+            return RedirectToAction(nameof(Profile));
         }
 
         [HttpPost]
@@ -368,6 +402,98 @@ namespace BadmintonCourtBooking.Controllers
             model.ReceiveBookingConfirm = profile.ReceiveBookingConfirm;
             model.ReceivePlayReminder = profile.ReceivePlayReminder;
             model.ReceivePromo = profile.ReceivePromo;
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetNotifications([FromServices] Data.ApplicationDbContext context, CancellationToken cancellationToken)
+        {
+            var currentUser = _currentUserService.User;
+            if (currentUser is null)
+            {
+                return Json(new List<object>());
+            }
+
+            var notifications = await context.Notifications
+                .Where(n => n.UserId == currentUser.UserId)
+                .OrderByDescending(n => n.CreatedAt)
+                .Select(n => new
+                {
+                    n.Id,
+                    n.Title,
+                    n.Content,
+                    CreatedAt = n.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                    timeAgo = "" // We'll compute this in memory or just use standard formatting
+                })
+                .ToListAsync(cancellationToken);
+
+            // Since we can't translate Custom TimeAgo logic to SQL translation directly inside Linq to Entities,
+            // we load the select projection and then map the timeAgo property in memory.
+            var result = notifications.Select(n => new
+            {
+                n.Id,
+                n.Title,
+                n.Content,
+                n.CreatedAt,
+                timeAgo = GetTimeAgo(DateTime.Parse(n.CreatedAt))
+            }).ToList();
+
+            return Json(result);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> DeleteNotification(string id, [FromServices] Data.ApplicationDbContext context, CancellationToken cancellationToken)
+        {
+            var currentUser = _currentUserService.User;
+            if (currentUser is null)
+            {
+                return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn." });
+            }
+
+            var notification = await context.Notifications
+                .FirstOrDefaultAsync(n => n.Id == id && n.UserId == currentUser.UserId, cancellationToken);
+
+            if (notification is null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy thông báo hoặc bạn không có quyền xóa." });
+            }
+
+            context.Notifications.Remove(notification);
+            await context.SaveChangesAsync(cancellationToken);
+
+            return Json(new { success = true });
+        }
+
+        private static string GetTimeAgo(DateTime dateTime)
+        {
+            var span = DateTime.UtcNow - dateTime;
+            if (span.TotalDays > 365)
+            {
+                var years = (int)(span.TotalDays / 365);
+                return $"{years} năm trước";
+            }
+            if (span.TotalDays > 30)
+            {
+                var months = (int)(span.TotalDays / 30);
+                return $"{months} tháng trước";
+            }
+            if (span.TotalDays >= 1)
+            {
+                var days = (int)span.TotalDays;
+                return $"{days} ngày trước";
+            }
+            if (span.TotalHours >= 1)
+            {
+                var hours = (int)span.TotalHours;
+                return $"{hours} giờ trước";
+            }
+            if (span.TotalMinutes >= 1)
+            {
+                var minutes = (int)span.TotalMinutes;
+                return $"{minutes} phút trước";
+            }
+            return "Vừa xong";
         }
     }
 }

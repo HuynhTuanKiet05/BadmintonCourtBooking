@@ -96,6 +96,18 @@ public class BookingService(ApplicationDbContext context, ICurrentUserService cu
 
         _context.Bookings.Add(booking);
 
+        // Create notification for Admin
+        var adminNotif = new NotificationEntity
+        {
+            Id = $"notif-{Guid.NewGuid():N}",
+            UserId = DemoDataConstants.DemoAdminUserId,
+            Title = "Yêu cầu đặt sân mới",
+            Content = $"Người chơi {currentUser.FullName} đã gửi yêu cầu đặt {court.Name} tại {court.Venue.Name} lúc {model.StartTime}.",
+            CreatedAt = DateTime.UtcNow,
+            IsRead = false
+        };
+        _context.Notifications.Add(adminNotif);
+
         try
         {
             await _context.SaveChangesAsync(cancellationToken);
@@ -140,10 +152,24 @@ public class BookingService(ApplicationDbContext context, ICurrentUserService cu
         booking.Status = BookingStatus.Cancelled;
         booking.CancelledAt = DateTime.UtcNow;
         booking.CancelReason = "Hủy bởi người chơi";
-        await _context.SaveChangesAsync(cancellationToken);
 
         var venueName = booking.Court?.Venue?.Name ?? "sân đã chọn";
         var courtName = booking.Court?.Name ?? "khung sân";
+
+        // Create notification for Admin
+        var adminNotif = new NotificationEntity
+        {
+            Id = $"notif-{Guid.NewGuid():N}",
+            UserId = DemoDataConstants.DemoAdminUserId,
+            Title = "Lịch đặt sân đã bị hủy",
+            Content = $"Người chơi {currentUser.FullName} đã hủy lịch đặt tại {venueName} ({courtName}) lúc {booking.StartAt.ToString("HH:mm dd/MM")}.",
+            CreatedAt = DateTime.UtcNow,
+            IsRead = false
+        };
+        _context.Notifications.Add(adminNotif);
+
+        await _context.SaveChangesAsync(cancellationToken);
+
         return OperationResult.Success($"Đã hủy lịch đặt tại {venueName} ({courtName}) thành công.");
     }
 

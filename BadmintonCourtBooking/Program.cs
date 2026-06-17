@@ -43,12 +43,24 @@ builder.Services.AddAuthentication()
         options.SignInScheme = IdentityConstants.ExternalScheme;
         options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "mock-google-id";
         options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "mock-google-secret";
+        options.Events.OnRemoteFailure = context =>
+        {
+            context.Response.Redirect("/Account/Login?remoteError=true");
+            context.HandleResponse();
+            return Task.CompletedTask;
+        };
     })
     .AddFacebook(options =>
     {
         options.SignInScheme = IdentityConstants.ExternalScheme;
         options.AppId = builder.Configuration["Authentication:Facebook:AppId"] ?? "mock-facebook-id";
         options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"] ?? "mock-facebook-secret";
+        options.Events.OnRemoteFailure = context =>
+        {
+            context.Response.Redirect("/Account/Login?remoteError=true");
+            context.HandleResponse();
+            return Task.CompletedTask;
+        };
     });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<ApplicationDbContextSeeder>();

@@ -11,6 +11,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<VenueEntity> Venues => Set<VenueEntity>();
     public DbSet<CourtEntity> Courts => Set<CourtEntity>();
     public DbSet<BookingEntity> Bookings => Set<BookingEntity>();
+    public DbSet<NotificationEntity> Notifications => Set<NotificationEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,6 +21,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             entity.Property(x => x.FullName).HasMaxLength(120).IsRequired();
             entity.Property(x => x.PlayArea).HasMaxLength(120);
+            entity.Property(x => x.AvatarPath).HasMaxLength(260);
             entity.Property(x => x.PhoneNumber).HasMaxLength(30);
             entity.HasIndex(x => x.PhoneNumber);
         });
@@ -36,6 +38,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.Property(x => x.ContactPhone).HasMaxLength(30).IsRequired();
             entity.Property(x => x.Description).HasMaxLength(2000).IsRequired();
             entity.Property(x => x.Highlight).HasMaxLength(200);
+            entity.Property(x => x.ImagePath).HasMaxLength(260);
             entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(40);
             entity.HasMany(x => x.Courts)
                 .WithOne(x => x.Venue)
@@ -69,6 +72,18 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .WithMany(x => x.PlayerBookings)
                 .HasForeignKey(x => x.PlayerUserId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<NotificationEntity>(entity =>
+        {
+            entity.ToTable("Notifications");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Title).HasMaxLength(150).IsRequired();
+            entity.Property(x => x.Content).HasMaxLength(500).IsRequired();
+            entity.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
     }

@@ -1,6 +1,203 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
+@{
+    ViewData["Title"] = "Chính sách bảo mật";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <style>
+        .legal-hero {
+            background: linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%);
+            color: #fff;
+            padding: 3.5rem 0 2.5rem;
+            text-align: center;
+        }
+        .legal-hero h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .legal-hero p {
+            color: #a7f3d0;
+            font-size: 0.95rem;
+        }
+        .legal-content {
+            max-width: 820px;
+            margin: -1.5rem auto 3rem;
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            padding: 2.5rem 2rem;
+            border: 1px solid #e2e8f0;
+        }
+        .legal-content h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #047857;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ecfdf5;
+        }
+        .legal-content h2:first-of-type {
+            margin-top: 0;
+        }
+        .legal-content p, .legal-content li {
+            font-size: 0.9rem;
+            line-height: 1.75;
+            color: #475569;
+        }
+        .legal-content ul {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .legal-content li {
+            margin-bottom: 0.35rem;
+        }
+        .legal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(255,255,255,0.15);
+            color: #d1fae5;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            margin-bottom: 0.75rem;
+        }
+        .legal-update {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        .info-card {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+            margin: 1.25rem 0;
+            font-size: 0.875rem;
+            color: #166534;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+        .info-card i {
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+    </style>
+}
+
+<div class="legal-hero">
+    <div class="container">
+        <div class="legal-badge">
+            <i data-lucide="shield-check" style="width:14px;height:14px"></i>
+            Bảo mật
+        </div>
+        <h1>Chính sách bảo mật</h1>
+        <p>Chúng tôi cam kết bảo vệ quyền riêng tư và dữ liệu cá nhân của bạn.</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="legal-content">
+
+        <div class="info-card">
+            <i data-lucide="info" style="width:18px;height:18px"></i>
+            <div>
+                Chính sách bảo mật này mô tả cách chúng tôi thu thập, sử dụng và bảo vệ thông tin cá nhân
+                của bạn khi sử dụng nền tảng Đặt Sân Cầu Lông (CourtBook).
+            </div>
+        </div>
+
+        <h2>1. Thông tin chúng tôi thu thập</h2>
+        <p>Khi bạn sử dụng Nền tảng, chúng tôi có thể thu thập các loại thông tin sau:</p>
+        <ul>
+            <li><strong>Thông tin cá nhân:</strong> Họ tên, địa chỉ email, số điện thoại khi bạn đăng ký tài khoản.</li>
+            <li><strong>Thông tin đặt sân:</strong> Lịch sử đặt sân, khung giờ, cụm sân đã đặt.</li>
+            <li><strong>Thông tin thiết bị:</strong> Loại trình duyệt, hệ điều hành, địa chỉ IP.</li>
+            <li><strong>Thông tin vị trí:</strong> Vị trí địa lý (nếu bạn cho phép) để tìm sân gần nhất.</li>
+            <li><strong>Thông tin đăng nhập bên ngoài:</strong> Dữ liệu từ Google hoặc Facebook nếu bạn chọn đăng nhập qua mạng xã hội.</li>
+        </ul>
+
+        <h2>2. Mục đích sử dụng thông tin</h2>
+        <p>Chúng tôi sử dụng thông tin của bạn để:</p>
+        <ul>
+            <li>Xác thực tài khoản và cung cấp dịch vụ đặt sân.</li>
+            <li>Gửi thông báo xác nhận đặt sân, nhắc lịch chơi (nếu bạn bật tính năng này).</li>
+            <li>Cải thiện trải nghiệm người dùng và chất lượng dịch vụ.</li>
+            <li>Phân tích và thống kê để phát triển Nền tảng.</li>
+            <li>Ngăn chặn gian lận và bảo đảm an ninh hệ thống.</li>
+        </ul>
+
+        <h2>3. Chia sẻ thông tin</h2>
+        <p>
+            Chúng tôi <strong>không bán, cho thuê hay chia sẻ</strong> thông tin cá nhân của bạn cho bên thứ ba,
+            ngoại trừ các trường hợp sau:
+        </p>
+        <ul>
+            <li>Khi được bạn đồng ý.</li>
+            <li>Để tuân thủ yêu cầu pháp lý hoặc quy định của cơ quan có thẩm quyền.</li>
+            <li>Để bảo vệ quyền lợi, tài sản hoặc an toàn của Nền tảng và người dùng.</li>
+        </ul>
+
+        <h2>4. Bảo mật dữ liệu</h2>
+        <ul>
+            <li>Mật khẩu được mã hóa một chiều (hashed) bằng thuật toán an toàn, không ai có thể đọc được mật khẩu gốc.</li>
+            <li>Xác thực người dùng thông qua ASP.NET Core Identity với Cookie Authentication an toàn.</li>
+            <li>Bảo vệ chống tấn công CSRF (Cross-Site Request Forgery) bằng AntiForgeryToken.</li>
+            <li>Kết nối được mã hóa bằng HTTPS.</li>
+        </ul>
+
+        <h2>5. Cookie</h2>
+        <p>
+            Nền tảng sử dụng Cookie để duy trì phiên đăng nhập của bạn. Cookie xác thực có tên
+            <code>CourtBook.Auth</code> và được cấu hình với tùy chọn bảo mật (HttpOnly, Secure, SameSite).
+        </p>
+        <ul>
+            <li>Cookie phiên: tự động xóa khi đóng trình duyệt (nếu không chọn "Ghi nhớ đăng nhập").</li>
+            <li>Cookie ghi nhớ: có hiệu lực trong 14 ngày (nếu chọn "Ghi nhớ đăng nhập").</li>
+        </ul>
+
+        <h2>6. Quyền của người dùng</h2>
+        <p>Bạn có quyền:</p>
+        <ul>
+            <li><strong>Truy cập:</strong> Xem thông tin cá nhân đã cung cấp tại trang Hồ sơ.</li>
+            <li><strong>Chỉnh sửa:</strong> Cập nhật họ tên, số điện thoại, email, khu vực chơi.</li>
+            <li><strong>Đổi mật khẩu:</strong> Thay đổi mật khẩu bất kỳ lúc nào.</li>
+            <li><strong>Cấu hình thông báo:</strong> Bật/tắt các loại thông báo theo nhu cầu.</li>
+            <li><strong>Xóa tài khoản:</strong> Liên hệ Quản trị viên để yêu cầu xóa tài khoản và dữ liệu.</li>
+        </ul>
+
+        <h2>7. Lưu trữ dữ liệu</h2>
+        <p>
+            Dữ liệu của bạn được lưu trữ trên máy chủ SQL Server. Khi tài khoản bị khóa hoặc xóa,
+            dữ liệu lịch sử đặt sân vẫn được giữ lại phục vụ mục đích thống kê (xóa mềm - Soft Delete).
+        </p>
+
+        <h2>8. Thay đổi chính sách</h2>
+        <p>
+            Chúng tôi có thể cập nhật Chính sách bảo mật này theo thời gian. Mọi thay đổi sẽ được
+            công bố trên trang này. Ngày cập nhật cuối cùng được ghi ở cuối trang.
+        </p>
+
+        <h2>9. Liên hệ</h2>
+        <p>
+            Nếu bạn có câu hỏi về Chính sách bảo mật, vui lòng liên hệ:
+        </p>
+        <ul>
+            <li>Email: <a href="mailto:support@courtbook.vn" class="text-emerald-700 fw-semibold">support@courtbook.vn</a></li>
+            <li>Hotline: <strong>1900 xxxx</strong></li>
+        </ul>
+
+        <div class="legal-update">
+            <i data-lucide="clock" style="width:14px;height:14px;vertical-align:middle;margin-right:4px"></i>
+            Cập nhật lần cuối: Tháng 6, 2026
+        </div>
+    </div>
+</div>
